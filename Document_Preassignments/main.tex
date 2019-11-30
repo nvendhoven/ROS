@@ -1,0 +1,102 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+
+\usepackage{rotating}               % 90 degrees image
+\usepackage{lscape}                 % landscape 
+
+\usepackage{hyperref}
+
+\usepackage{longtable}
+\usepackage{csquotes}               % Use proper \enquote{quotations}
+
+\usepackage[block=ragged,alldates=comp]{biblatex} % Reference management
+
+\usepackage{tikz}
+\usepackage{tikz-qtree}
+
+\addbibresource{references.bib}
+
+\usepackage%
+[%
+left=2cm,% left margin
+right=2cm,% right margin
+top=3cm, % top margin
+bottom=3cm,% bottom margin
+a4paper% other options: a0paper, a1paper, a2paper, a3paper, a4paper, a5paper, a6paper, and many more.
+]{geometry}
+
+\usepackage{pbox}
+
+\title{DLLGraph}
+\author{Youri Klaassens, Nathan Godefroij}
+\date{October 2019}
+
+\definecolor{mGreen}{rgb}{0,0.6,0}
+\definecolor{mGray}{rgb}{0.5,0.5,0.5}
+\definecolor{mPurple}{rgb}{0.58,0,0.82}
+\definecolor{backgroundColour}{rgb}{0.95,0.95,0.92}
+
+\setlength{\parindent}{0pt}
+
+\lstdefinestyle{CStyle}{
+    backgroundcolor=\color{backgroundColour},   
+    commentstyle=\color{mGreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{mGray},
+    stringstyle=\color{mPurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=C
+}
+
+\tikzset{every tree node/.style={minimum width=2em,draw,circle},
+         blank/.style={draw=none},
+         edge from parent/.style=
+         {draw, edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}},
+         level distance=1.5cm}
+
+\lstdefinestyle{ValgrindStyle}{
+    backgroundcolor=\color{backgroundColour},   
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=C
+}
+
+\begin{document}
+
+\input{cover.tex}
+
+\tableofcontents
+\thispagestyle{empty}
+
+\newpage
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{Chapters/introduction.tex}
+
+\end{document}
