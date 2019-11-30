@@ -15,12 +15,13 @@
 \usepackage{longtable}              % Predefined width table
 \usepackage{csquotes}               % Use proper \enquote{quotations}
 
-\usepackage[block=ragged,alldates=comp]{biblatex} % Reference management
+\usepackage[block=ragged,alldates=comp,backend=biber]{biblatex} % Reference management
 
 \usepackage{tikz}
 \usepackage{tikz-qtree}
 
-\addbibresource{references.bib}
+%\bibliographystyle{IEEEtran}
+\bibliography{references.bib}
 
 \usepackage%
 [%
@@ -85,6 +86,7 @@ a4paper% other options: a0paper, a1paper, a2paper, a3paper, a4paper, a5paper, a6
     language=C
 }
 
+\addbibresource{references.bib}
 \begin{document}
 
 \input{cover.tex}
@@ -108,5 +110,10 @@ a4paper% other options: a0paper, a1paper, a2paper, a3paper, a4paper, a5paper, a6
 \newpage
 \appendix
 \input{Chapters/appendix.tex}
+
+\newpage
+
+\addcontentsline{toc}{section}{References}
+\printbibliography
 
 \end{document}

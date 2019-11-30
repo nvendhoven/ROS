@@ -32,4 +32,9 @@ void delay_1sec(void)
 }
 \end{lstlisting}
 
-Line \ref{line:delay1sec_push} 
+Line \ref{line:delay1sec_push} pushes 8 registers onto the stack. 
+This is part of the ARM Architecture Procedure Call Standard (AAPCS) which is part of the ARM Application Binary Interface (ABI). \cite{IntroEmbeddedSystems}
+This standard describes that \texttt{R0} up to and including \texttt{R4} are used to pass input parameters into a C function. 
+Functions should preserve the content of registers \texttt{R4} up to and including \texttt{R11}.
+Listing \ref{lst:delay1sec} does not use all of the registers a callee should save, but it is best practice to push them in case one does not know how many registers his or her piece of software will use.
+
