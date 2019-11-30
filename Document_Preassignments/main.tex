@@ -4,7 +4,7 @@
 \usepackage[english]{babel}
 \usepackage{graphicx}
 \usepackage{listings}
-\usepackage{xcolor}
+\usepackage{xcolor}                 % Define custom colour and use using \textcolor{colour}{text}
 \usepackage{float}
 
 \usepackage{rotating}               % 90 degrees image
@@ -12,7 +12,7 @@
 
 \usepackage{hyperref}
 
-\usepackage{longtable}
+\usepackage{longtable}              % Predefined width table
 \usepackage{csquotes}               % Use proper \enquote{quotations}
 
 \usepackage[block=ragged,alldates=comp]{biblatex} % Reference management
@@ -97,6 +97,16 @@ a4paper% other options: a0paper, a1paper, a2paper, a3paper, a4paper, a5paper, a6
 \pagenumbering{arabic}
 \setcounter{page}{1}
 
+\input{Chapters/version.tex}
+
+\newpage
 \input{Chapters/introduction.tex}
+
+\newpage
+\input{Chapters/acknowledgement.tex}
+
+\newpage
+\appendix
+\input{Chapters/appendix.tex}
 
 \end{document}

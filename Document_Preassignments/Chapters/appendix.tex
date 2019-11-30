@@ -1,0 +1,35 @@
+\section{Appendix}
+
+The appendix contains subsections that support this report or its where its content goes too much off-topic with the purpose of 
+this report, but are interesting for the reader to possibly read.
+
+\subsection{Delay \textit{exactly} one second counting instruction cycles}
+
+Many assignments require a delay of 1 second to spot blinky LEDs by eye.
+One can use the Systick timer or hardware timers, but where is the fun in that?
+For the sake of some assignments, it is acceptable to burn clock cycles by wasting the CPU.
+Listing \ref{lst:delay1sec} contains a function which will delay the return moment by 1 second.
+Now each line containing inline assembly will be explained.
+
+\begin{lstlisting}[style=CStyle, caption={C function containing inline assembly to perform a delay of \textit{exactly} one second}, captionpos=b, label={lst:delay1sec}, escapechar=|]
+void delay_1sec(void)
+{
+    __asm("    PUSH {r4-r11,lr}");  |\label{line:delay1sec_push}|
+ 
+    __asm("    LDR r4, [pc, #12]");
+   
+    __asm("    MOV r5, pc");
+    __asm("    NOP");
+     
+    __asm("    SUBS r4, #1");   /* 1 instruction cycle */
+    __asm("    ITE NEQ");       /* 1 instruction cycle */
+   
+    __asm("    MOV pc, r5");    /* 1 + P instructions (where P is between 1 and 3 depending on pipeline refill) */
+     
+     
+    __asm("    POP {r4-r11,pc}");
+    __asm("    .word    0x5000000");
+}
+\end{lstlisting}
+
+Line \ref{line:delay1sec_push} 
