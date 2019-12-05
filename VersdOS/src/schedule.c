@@ -51,6 +51,15 @@ int iTempRegister=0;
  * */
 void SystickISR(void)
 {
+    for(int idx = 0; idx < MAX_TASKS; idx++)
+    {
+        if(taskList[idx].state == WAITING){
+            taskList[idx].uiCounter -= 1;
+            if(taskList[idx].uiCounter == 0)
+                taskList[idx].state = READY;
+        }
+    }
+
 	schedule();
 }
 

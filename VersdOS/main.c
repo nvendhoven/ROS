@@ -12,11 +12,21 @@
 
 #define ALL_LEDS (RED_LED | YELLOW_LED | GREEN_LED)
 
+extern task taskList[MAX_TASKS];
+
+volatile int q = 0;
+
 /*------------------------------------DEMO---------------------------------------*/
-//unworthy delay function
-void delay(unsigned int count)
+//worthy delay function
+void delayTask(unsigned int ticks)
 {
-    while(count--);
+    for(int idx = 0; idx < MAX_TASKS; idx++)
+    {
+        if(taskList[idx].state == RUNNING){
+            taskList[idx].uiCounter = ticks;
+            taskList[idx].state = WAITING;
+        }
+    }
 }
 
 void toggleRed(void)
@@ -24,7 +34,7 @@ void toggleRed(void)
     while(1)
     {
         HWREG(GPIOA1_BASE + (ALL_LEDS<<2)) ^= RED_LED;
-        delay(3000000);
+        delayTask(3000000);
     }
 }
 
@@ -33,7 +43,7 @@ void toggleYellow(void)
     while(1)
     {
         HWREG(GPIOA1_BASE + (ALL_LEDS<<2)) ^= YELLOW_LED;
-        delay(1500000);
+        delayTask(1500000);
     }
 }
 
@@ -42,7 +52,7 @@ void toggleGreen(void)
     while(1)
     {
         HWREG(GPIOA1_BASE + (ALL_LEDS<<2)) ^= GREEN_LED;
-        delay(6000000);
+        delayTask(6000000);
     }
 }
 
