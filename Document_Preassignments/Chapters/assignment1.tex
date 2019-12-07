@@ -32,3 +32,260 @@ Between every sequence should be a delay of approximately 1 second.
     \label{tab:led_scheme}
     \caption{Order of visualisation of different LEDs}
 \end{table}
+
+As said earlier, these \enquote{LED show} should be programmed on three different levels of abstraction.
+The first one is no abstraction at all using a programming technique called Direct Register Manipulation (DRM) \cite{IntroEmbeddedSystems}.
+The second implementation should make use Driverlib.
+The third implementation should make use of the Texas Instruments (TI) Driver.
+
+\newpage
+\subsection{Direct Register Manipulation}
+
+Listing \ref{lst:led_drm} shows the source code to toggle LEDs according to Table \ref{tab:led_scheme}.
+The reader may wonder why the implementation of \texttt{delay\_1sec()} is missing. 
+This is because it is a common function used in lots of code snippets throughout this document.
+For the implementation details see Appendix \ref{subsec:appendix_delay}.
+Now follows an explanation about interesting lines of code.
+Line \ref{line:drm_arcm} enables the GPIOA peripheral during run mode (see Figure \ref{fig:gpio0clken}).
+This program does not enter sleep mode or deep sleep mode. Setting bit 8 and bit 16 (Figure \ref{fig:gpio0clken}) does not make sense.
+
+\begin{figure}[H]
+\centering
+
+\begin{bytefield}[endianness=big, bitwidth=3.0em]{30}
+\bitheader[lsb=2]{16-31} \\
+    \bitbox{15}{\tiny Reserved} &
+    \colorbitbox{celadon}{1}{\tiny DSLPCLKEN} \\ [3ex]
+\bitheader[lsb=-14]{0-15} \\
+    \bitbox{7}{\tiny Not Used}
+    \colorbitbox{celadon}{1}{\tiny SLPCLKEN}
+    \bitbox{7}{\tiny Not Used}
+    \colorbitbox{celadon}{1}{\tiny RUNCLKEN}
+\end{bytefield}
+
+\caption{\texttt{GPIO0CLKEN} register for the CC3220s}
+\label{fig:gpio0clken}
+
+\end{figure}
+
+The behavior of the pins being used must be configured.
+The assignment only requires the use of GPIO9, GPIO10 and GPIO11 because the built-in LEDs are routed to these pins.
+Configuration for these pins are done in Line \ref{line:drm_conf9} up to and including Line \ref{line:drm_conf11}.
+The value 0x60 is written to the \texttt{GPIO\_PAD\_CONFIG\_x} register where x is 9, 10 and 11.
+It affects the second nibble of the register.
+Since only bit 1 and bit 2 of the nibble are affected it does not set the bit in the \texttt{open drain} field (Figure \ref{fig:padconf}).
+Writing $001_{2}$ to the \texttt{DRIVE STRENGTH} field means that the related GPIO pin will drive 6 mA.
+
+\begin{figure}[H]
+\centering
+
+\begin{bytefield}[endianness=big, bitwidth=3.0em]{30}
+\bitheader[lsb=2]{16-31} \\
+    \bitbox{16}{\tiny Reserved} \\ [3ex]
+\bitheader[lsb=-14]{0-15} \\
+    \bitbox{4}{\tiny Reserved}
+    \colorbitbox{celadon}{1}{\tiny over-riding buffer}
+    \colorbitbox{celadon}{1}{\tiny override value}
+    \colorbitbox{celadon}{1}{\tiny pulldown}
+    \colorbitbox{celadon}{1}{\tiny pullup}
+    \colorbitbox{celadon}{3}{\tiny DRIVE STRENGTH}
+    \colorbitbox{celadon}{1}{\tiny open drain}
+    \colorbitbox{celadon}{4}{\tiny CONFMODE}
+\end{bytefield}
+
+\caption{\texttt{GPIO\_PAD\_CONFIG\_x} register for the CC3220s}
+\label{fig:padconf}
+
+\end{figure}
+
+A GPIO pin is either input or output. Writing a 1 to the \texttt{GPIO\_DIR} register (Figure \ref{fig:dirconf}) configures a GPIO pin as output pin.
+Writing a 0 to the \texttt{GPIO\_DIR} register configures a GPIO pin as input pin.
+Because this program only needs GPIO9, GPIO10 and GPIO11 the program needs to write a 1 to bit 1, bit 2 and bit 3 respectively.
+$00001110_{2}$ is 0x0E in hexadecimal representation.
+That is why the program writes 0x0E to the \texttt{GPIO\_DIR} register at Line \ref{line:drm_dir}.
+
+\begin{figure}[H]
+\centering
+
+\begin{bytefield}[endianness=big, bitwidth=3.0em]{30}
+\bitheader[lsb=2]{16-31} \\
+    \bitbox{16}{\tiny Reserved} \\ [3ex]
+\bitheader[lsb=-14]{0-15} \\
+    \bitbox{8}{\tiny Reserved}
+
+    \colorbitbox{celadon}{1}{\tiny DIR}
+    \colorbitbox{celadon}{1}{\tiny DIR}
+    \colorbitbox{celadon}{1}{\tiny DIR}
+    \colorbitbox{celadon}{1}{\tiny DIR}
+    \colorbitbox{celadon}{1}{\tiny DIR}
+    \colorbitbox{celadon}{1}{\tiny DIR}
+    \colorbitbox{celadon}{1}{\tiny DIR}
+    \colorbitbox{celadon}{1}{\tiny DIR}
+
+\end{bytefield}
+
+\caption{\texttt{GPIO\_DIR} register for the CC3220s}
+\label{fig:dirconf}
+
+\end{figure}
+
+Setting the output pin to logic high or logic low requires a little extra explanation.
+There is a mask which should be added to the base address plus the address of the \texttt{GPIO\_DATA} register.
+This prevents software from a read-modify-write operation. A change in logic level of an GPIO output pin is done in a single cycle.
+The bits one would like to change should be shifted 2 positions to the right and added to base address + the \texttt{GPIO\_DATA} offset.
+Line \ref{line:drm_init_data} turns the three LEDs off by writing $00000000_{2}$ or 0x00 to the \texttt{GPIO\_DATA} register.
+However, because of the mask added to the address only bit 1, bit 2 and bit 3 are affected.
+
+\begin{figure}[H]
+\centering
+
+\begin{bytefield}[endianness=big, bitwidth=3.0em]{30}
+\bitheader[lsb=2]{16-31} \\
+    \bitbox{16}{\tiny Reserved} \\ [3ex]
+\bitheader[lsb=-14]{0-15} \\
+    \bitbox{8}{\tiny Reserved}
+
+    \colorbitbox{celadon}{1}{\tiny DATA}
+    \colorbitbox{celadon}{1}{\tiny DATA}
+    \colorbitbox{celadon}{1}{\tiny DATA}
+    \colorbitbox{celadon}{1}{\tiny DATA}
+    \colorbitbox{celadon}{1}{\tiny DATA}
+    \colorbitbox{celadon}{1}{\tiny DATA}
+    \colorbitbox{celadon}{1}{\tiny DATA}
+    \colorbitbox{celadon}{1}{\tiny DATA}
+
+\end{bytefield}
+
+\caption{\texttt{GPIO\_DATA} register for the CC3220s}
+\label{fig:dataconf}
+
+\end{figure}
+
+The following things happen in an infinite loop.
+Line \ref{line:drm_toggle} in Listing \ref{lst:led_drm} write a variable \texttt{index} to \texttt{GPIO\_DATA} register.
+This value is shifted 1 position to the left because the first LED is positioned at GPIO9 and not at GPIO8.
+Line \ref{line:drm_modulo} increments \texttt{index}. Variable \texttt{index} can hold $0 \leq x < 16$ (although $0 \leq x < 8$ would be sufficient).
+The second operand of the modulo operator does not really matter as long as it is a multiple of $2^3$.
+Line \ref{line:drm_sleep}
+
+\begin{lstlisting}[style=CStyle, caption={Toggling LEDs according to Table \ref{tab:led_scheme} using DRM programming technique}, captionpos=b, label={lst:led_drm}, escapechar=@]
+#include <stdint.h>
+#include <stddef.h>
+#include "register_def.h"
+ 
+#include "inc\hw_memmap.h"
+#include "inc\hw_gpio.h"
+#include "inc\hw_apps_rcm.h"
+#include "inc\hw_ocp_shared.h"
+ 
+/* Function delay_1sec() used to be here */
+
+int main(void)
+{
+ 
+    HWREG(ARCM_BASE + APPS_RCM_O_GPIO_A_CLK_GATING) = 0x01; @\label{line:drm_arcm}@
+ 
+    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_9) = 0x60; @\label{line:drm_conf9}@
+    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_10) = 0x60; @\label{line:drm_conf10}@
+    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_11) = 0x60; @\label{line:drm_conf11}@
+ 
+    HWREG(GPIOA1_BASE + GPIO_O_GPIO_DIR) = 0x0E;    @\label{line:drm_dir}@
+    HWREG(GPIOA1_BASE + GPIO_O_GPIO_DATA + (0x0E << 2)) = 0x00; @\label{line:drm_init_data}@
+ 
+    int index = 0;
+ 
+    while(1)
+    {
+        HWREG(GPIOA1_BASE + GPIO_O_GPIO_DATA + (0x0E << 2)) = (index << 1); @\label{line:drm_toggle}@
+        index = (index + 1) % 16;       @\label{line:drm_modulo}@
+        delay_1sec();                   @\label{line:drm_sleep}@
+    }
+ 
+    return 0;
+}
+\end{lstlisting}
+
+
+\newpage
+\subsection{Driverlib}
+
+\begin{lstlisting}[style=CStyle, caption={as}, captionpos=b, label={lst:label}, escapechar=@]
+#include <stdint.h>
+#include <stddef.h>
+#include "register_def.h"
+ 
+#include "gpio.h"
+#include "pin.h"
+#include "prcm.h"
+ 
+/* GPIO 9 is PIN_64 is (red) */
+/* GPIO 10 is PIN_2 is (green) */
+/* GPIO 11 is PIN_1 is (yellow) */
+ 
+/* Function delay_1sec() used to be here */
+ 
+int main(void)
+{
+    PRCMPeripheralClkEnable(PRCM_GPIOA1 ,PRCM_RUN_MODE_CLK);
+ 
+    PinTypeGPIO(PIN_64, PIN_STRENGTH_2MA, false);   /* Red LED is push-pull */
+    PinTypeGPIO(PIN_01, PIN_STRENGTH_2MA, false);   /* Yellow LED is push-pull */
+    PinTypeGPIO(PIN_02, PIN_STRENGTH_2MA, false);   /* Green LED is push-pull */
+ 
+    GPIODirModeSet(GPIOA1_BASE, GPIO_PIN_2, GPIO_DIR_MODE_OUT);
+    GPIODirModeSet(GPIOA1_BASE, GPIO_PIN_3, GPIO_DIR_MODE_OUT);
+    GPIODirModeSet(GPIOA1_BASE, GPIO_PIN_1, GPIO_DIR_MODE_OUT);
+ 
+    GPIOPinWrite(GPIOA1_BASE, GPIO_PIN_2, ~GPIO_PIN_2);  /* Turn yellow LED off */
+    GPIOPinWrite(GPIOA1_BASE, GPIO_PIN_3, ~GPIO_PIN_3);  /* Turn green LED off */
+    GPIOPinWrite(GPIOA1_BASE, GPIO_PIN_1, ~GPIO_PIN_1);  /* Turn red LED off */
+ 
+    int switcher = 0;
+ 
+    while(1)
+    {
+        GPIOPinWrite(GPIOA1_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, switcher);
+        delay_1sec();
+ 
+        switcher = (switcher + 1) % 16;
+    }
+}
+\end{lstlisting}
+
+\newpage
+\subsection{TI Driver}
+
+\begin{lstlisting}[style=CStyle, caption={as}, captionpos=b, label={lst:label}, escapechar=@]
+void *mainThread(void *arg0)
+{
+    /* Call driver init functions */
+    GPIO_init();
+ 
+    /* Configure the LED */
+    GPIO_setConfig(Board_GPIO_LED0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(Board_GPIO_LED1, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(Board_GPIO_LED2, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+ 
+    /* Turn on user LED */
+    GPIO_write(Board_GPIO_LED0, Board_GPIO_LED_OFF);    /* Turn red LED off */
+    GPIO_write(Board_GPIO_LED1, Board_GPIO_LED_OFF);    /* Turn yellow LED off */
+    GPIO_write(Board_GPIO_LED2, Board_GPIO_LED_OFF);    /* Turn green LED off */
+ 
+    unsigned int switcher = 0;
+ 
+    while(1)
+    {
+        GPIO_write(Board_GPIO_LED0, switcher & 1);
+        GPIO_write(Board_GPIO_LED1, (switcher & 2) >> 1);
+        GPIO_write(Board_GPIO_LED2, (switcher & 4) >> 2);
+        delay_1sec();
+ 
+ 
+ 
+        switcher = (switcher + 1) % 8;
+    }
+ 
+ 
+    return (NULL);
+}
+\end{lstlisting}

@@ -29,7 +29,7 @@ void delay_1sec(void)
      
      
     __asm("    POP {r4-r11,pc}"); |\label{line:delay1sec_pop}|
-    __asm("    .word    0x5000000"); |\label{line:delay1sec_word}|
+    __asm("    .word    5000000"); |\label{line:delay1sec_word}|
 }
 \end{lstlisting}
 

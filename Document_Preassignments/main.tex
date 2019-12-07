@@ -14,8 +14,13 @@
 
 \usepackage{longtable}              % Predefined width table
 \usepackage{csquotes}               % Use proper \enquote{quotations}
-
+\usepackage{bytefield}              % Beautiful register figures 
 \usepackage[block=ragged,alldates=comp,backend=biber]{biblatex} % Reference management
+
+\definecolor{celadon}{rgb}{0.67, 0.88, 0.69}
+\newcommand{\colorbitbox}[3]{%
+\rlap{\bitbox{#2}{\color{#1}\rule{\width}{\height}}}%
+\bitbox{#2}{#3}}
 
 \usepackage{tikz}
 \usepackage{tikz-qtree}
