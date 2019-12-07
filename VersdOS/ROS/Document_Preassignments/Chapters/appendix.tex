@@ -1,0 +1,54 @@
+\section{Appendix}
+
+The appendix contains subsections that support this report or its where its content goes too much off-topic with the purpose of 
+this report, but are interesting for the reader to possibly read.
+
+\subsection{Delay \textit{exactly} one second counting instruction cycles}
+\label{subsec:appendix_delay}
+
+Many assignments require a delay of 1 second to spot blinky LEDs by eye.
+One can use the Systick timer or hardware timers, but where is the fun in that?
+For the sake of some assignments, it is acceptable to burn clock cycles by wasting the CPU.
+Listing \ref{lst:delay1sec} contains a function which will delay the return moment by 1 second.
+Now each line containing inline assembly will be explained.
+
+\begin{lstlisting}[style=CStyle, caption={C function containing inline assembly to perform a delay of \textit{exactly} one second}, captionpos=b, label={lst:delay1sec}, escapechar=|]
+void delay_1sec(void)
+{
+    __asm("    PUSH {r4-r11,lr}");  |\label{line:delay1sec_push}|
+ 
+    __asm("    LDR r4, [pc, #12]"); |\label{line:delay1sec_getword}|
+   
+    __asm("    MOV r5, pc");        |\label{line:delay1sec_storepc}|
+    __asm("    NOP");               |\label{line:delay1sec_nop}|
+     
+    __asm("    SUBS r4, #1");   /* 1 instruction cycle */ |\label{line:delay1sec_sub}|
+    __asm("    ITE NEQ");       /* 1 instruction cycle */ |\label{line:delay1sec_ite}|
+   
+    __asm("    MOV pc, r5");    /* 1 + P instructions (where P is between 1 and 3 depending on pipeline refill) */ |\label{line:delay1sec_restorepc}|
+     
+     
+    __asm("    POP {r4-r11,pc}"); |\label{line:delay1sec_pop}|
+    __asm("    .word    0x5000000"); |\label{line:delay1sec_word}|
+}
+\end{lstlisting}
+
+Line \ref{line:delay1sec_push} pushes 8 registers onto the stack. 
+This is part of the ARM Architecture Procedure Call Standard (AAPCS) which is part of the ARM Application Binary Interface (ABI) \cite{IntroEmbeddedSystems}.
+This standard describes that \texttt{R0} up to and including \texttt{R4} are used to pass input parameters into a C function. 
+Functions should preserve the content of registers \texttt{R4} up to and including \texttt{R11}.
+Listing \ref{lst:delay1sec} does not use all of the registers a callee should save, but it is best practice to push them in case one does not know how many registers his or her piece of software will use.\\
+%TODO: Explain line two
+Line \ref{line:delay1sec_storepc} stores the Program Counter (PC) into \texttt{R5}. 
+Because the PC is two instruction (8 bytes) ahead in ARM mode it actually stores the address for Line \ref{line:delay1sec_sub}.
+This is the first instruction that should be executed iterative.
+Line \ref{line:delay1sec_nop} makes sure the instruction located at Line \ref{line:delay1sec_storepc} contains the correct address. The alternative is replacing this instruction with a \texttt{SUB} instruction and subtract 4 bytes from \texttt{R5}.
+Line \ref{line:delay1sec_ite} does a check whether the content of \texttt{R4} is equal to zero or not \cite{DefinitiveGuide}.
+If \texttt{R4} is not equal to zero (which makes the statement true because we check for \texttt{NEQ} condition code) Line \ref{line:delay1sec_restorepc} is executed. If \texttt{R4} is equal to zero Line \ref{line:delay1sec_pop} is executed.
+Line \ref{line:delay1sec_restorepc} stores the PC we saved earlier in Line \ref{line:delay1sec_storepc} to the PC.
+This results a branch to Line \ref{line:delay1sec_sub}.
+Line \ref{line:delay1sec_pop} restores the saved registers and jumps back to the caller. 
+It is not an option to leave out the restore to the PC because that means that the next instruction executed will be the one on Line \ref{line:delay1sec_word}.
+This is not an intentional instruction but just a location to store a number. If we let the PC execute this line we get undefined behaviour.
+
+
