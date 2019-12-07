@@ -164,9 +164,9 @@ However, because of the mask added to the address only bit 1, bit 2 and bit 3 ar
 The following things happen in an infinite loop.
 Line \ref{line:drm_toggle} in Listing \ref{lst:led_drm} write a variable \texttt{index} to \texttt{GPIO\_DATA} register.
 This value is shifted 1 position to the left because the first LED is positioned at GPIO9 and not at GPIO8.
-Line \ref{line:drm_modulo} increments \texttt{index}. Variable \texttt{index} can hold $0 \leq x < 16$ (although $0 \leq x < 8$ would be sufficient).
+Line \ref{line:drm_modulo} increments \texttt{index}. Variable \texttt{index} can hold $0 \leq index < 16$ (although $0 \leq index < 8$ would be sufficient).
 The second operand of the modulo operator does not really matter as long as it is a multiple of $2^3$.
-Line \ref{line:drm_sleep}
+Line \ref{line:drm_sleep} makes a call to \texttt{delay\_1sec()}. The function returns after 1 second since it is a busy-wait like implementation where the CPU just burns CPU cycles.
 
 \begin{lstlisting}[style=CStyle, caption={Toggling LEDs according to Table \ref{tab:led_scheme} using DRM programming technique}, captionpos=b, label={lst:led_drm}, escapechar=@]
 #include <stdint.h>
@@ -209,7 +209,18 @@ int main(void)
 \newpage
 \subsection{Driverlib}
 
-\begin{lstlisting}[style=CStyle, caption={as}, captionpos=b, label={lst:label}, escapechar=@]
+Driverlib is a library which provides access to peripherals.
+The advantage of this is that the programmer does not need to know base addresses and offsets in order to access special function registers.
+Line \ref{line:driverlib_clk} in Listing \ref{lst:led_driverlib} enables the \texttt{GPIOA1} peripheral by enabling a clock signal to the peripheral.
+Line \ref{line:driverlib_pad1} up to and including Line \ref{line:driverlib_pad3} configures the GPIO9, GPIO10 and GPIO11 pin characteristics. The pins can use now a maximum of 2 mA per pin.
+Note that the function accepts a macro which contains the physical pin number instead of the logical pin number.
+Line \ref{line:driverlib_dir1} up to and including Line \ref{line:driverlib_dir3} configures GPIO9, GPIO10 and GPIO11 to an output pin.
+Line \ref{line:driverlib_data1} up to and including Line \ref{line:driverlib_data3} turns the three LEDs off by default.
+
+Line \ref{line:driverlib_toggle} writes the value \texttt{switcher} to the \texttt{GPIO\_DATA} register but only \texttt{GPIO\_PIN\_1}, \texttt{GPIO\_PIN\_2} and \texttt{GPIO\_PIN\_3} (which are GPIO9, GPIO10 and GPIO11) are sensitive for this value change. 
+Line \ref{line:driverlib_sleep} makes a function call to \texttt{delay\_1sec()} which will return to the caller after 1 second.
+
+\begin{lstlisting}[style=CStyle, caption={Toggling LEDs according to Table \ref{tab:led_scheme} using Driverlib library}, captionpos=b, label={lst:led_driverlib}, escapechar=@]
 #include <stdint.h>
 #include <stddef.h>
 #include "register_def.h"
@@ -226,28 +237,28 @@ int main(void)
  
 int main(void)
 {
-    PRCMPeripheralClkEnable(PRCM_GPIOA1 ,PRCM_RUN_MODE_CLK);
+    PRCMPeripheralClkEnable(PRCM_GPIOA1 ,PRCM_RUN_MODE_CLK);        @\label{line:driverlib_clk}@
  
-    PinTypeGPIO(PIN_64, PIN_STRENGTH_2MA, false);   /* Red LED is push-pull */
-    PinTypeGPIO(PIN_01, PIN_STRENGTH_2MA, false);   /* Yellow LED is push-pull */
-    PinTypeGPIO(PIN_02, PIN_STRENGTH_2MA, false);   /* Green LED is push-pull */
+    PinTypeGPIO(PIN_64, PIN_STRENGTH_2MA, false);   /* Red LED is push-pull */  @\label{line:driverlib_pad1}@
+    PinTypeGPIO(PIN_01, PIN_STRENGTH_2MA, false);   /* Yellow LED is push-pull */ @\label{line:driverlib_pad2}@
+    PinTypeGPIO(PIN_02, PIN_STRENGTH_2MA, false);   /* Green LED is push-pull */  @\label{line:driverlib_pad3}@
  
-    GPIODirModeSet(GPIOA1_BASE, GPIO_PIN_2, GPIO_DIR_MODE_OUT);
-    GPIODirModeSet(GPIOA1_BASE, GPIO_PIN_3, GPIO_DIR_MODE_OUT);
-    GPIODirModeSet(GPIOA1_BASE, GPIO_PIN_1, GPIO_DIR_MODE_OUT);
+    GPIODirModeSet(GPIOA1_BASE, GPIO_PIN_2, GPIO_DIR_MODE_OUT); @\label{line:driverlib_dir1}@
+    GPIODirModeSet(GPIOA1_BASE, GPIO_PIN_3, GPIO_DIR_MODE_OUT); @\label{line:driverlib_dir2}@
+    GPIODirModeSet(GPIOA1_BASE, GPIO_PIN_1, GPIO_DIR_MODE_OUT); @\label{line:driverlib_dir3}@
  
-    GPIOPinWrite(GPIOA1_BASE, GPIO_PIN_2, ~GPIO_PIN_2);  /* Turn yellow LED off */
-    GPIOPinWrite(GPIOA1_BASE, GPIO_PIN_3, ~GPIO_PIN_3);  /* Turn green LED off */
-    GPIOPinWrite(GPIOA1_BASE, GPIO_PIN_1, ~GPIO_PIN_1);  /* Turn red LED off */
+    GPIOPinWrite(GPIOA1_BASE, GPIO_PIN_2, ~GPIO_PIN_2);  /* Turn yellow LED off */ @\label{line:driverlib_data1}@
+    GPIOPinWrite(GPIOA1_BASE, GPIO_PIN_3, ~GPIO_PIN_3);  /* Turn green LED off */   @\label{line:driverlib_data2}@
+    GPIOPinWrite(GPIOA1_BASE, GPIO_PIN_1, ~GPIO_PIN_1);  /* Turn red LED off */    @\label{line:driverlib_data3}@
  
     int switcher = 0;
  
     while(1)
     {
-        GPIOPinWrite(GPIOA1_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, switcher);
-        delay_1sec();
+        GPIOPinWrite(GPIOA1_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, switcher);  @\label{line:driverlib_toggle}@
+        delay_1sec();                                                               @\label{line:driverlib_sleep}@
  
-        switcher = (switcher + 1) % 16;
+        switcher = (switcher + 1) % 16;                                             @\label{line:driverlib_inc}@
     }
 }
 \end{lstlisting}
@@ -255,7 +266,7 @@ int main(void)
 \newpage
 \subsection{TI Driver}
 
-\begin{lstlisting}[style=CStyle, caption={as}, captionpos=b, label={lst:label}, escapechar=@]
+\begin{lstlisting}[style=CStyle, caption={Toggling LEDs according to Table \ref{tab:led_scheme} using TI Driver}, captionpos=b, label={lst:led_ti}, escapechar=@]
 void *mainThread(void *arg0)
 {
     /* Call driver init functions */
@@ -280,8 +291,6 @@ void *mainThread(void *arg0)
         GPIO_write(Board_GPIO_LED2, (switcher & 4) >> 2);
         delay_1sec();
  
- 
- 
         switcher = (switcher + 1) % 8;
     }
  
@@ -289,3 +298,4 @@ void *mainThread(void *arg0)
     return (NULL);
 }
 \end{lstlisting}
+
