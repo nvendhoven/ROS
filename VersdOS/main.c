@@ -27,6 +27,7 @@ void delayTask(unsigned int ticks)
             taskList[idx].state = WAITING;
         }
     }
+    schedule();
 }
 
 void toggleRed(void)
@@ -56,6 +57,12 @@ void toggleGreen(void)
     }
 }
 
+void idleTask(void)
+{
+
+    __asm("    wfi");
+}
+
 int main(void)
 {
     // Turn on GPIOA1 module
@@ -69,9 +76,10 @@ int main(void)
     HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_11) = 1<<5; //2mA driver
 
     // Create tasks. Provide fpointer, stacksize, and priority:
+    addTaskToList(idleTask, 128, 1);
     addTaskToList(toggleRed     , 128, 2);
-    addTaskToList(toggleGreen   , 128, 2);
-    addTaskToList(toggleYellow, 128, 2);
+    addTaskToList(toggleGreen   , 128, 3);
+    addTaskToList(toggleYellow, 128, 4);
 
     // Turn on SysTick, every ms when CPU is running at 80MHz
     HWREG(NVIC_ST_RELOAD) =  80000-1;
