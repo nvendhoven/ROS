@@ -35,6 +35,7 @@ task taskList[MAX_TASKS];
 //currentTask used by the scheduler
 extern task * currentTask;
 
+int amount_of_tasks = 0;
 
 /*
  * Function to add a new task to the taskList
@@ -87,6 +88,7 @@ void addTaskToList(void(*function)(void), int stackSize, int priority)
 	currentTask->bInitialized 	= 0;
 	currentTask->uiPriority 	= priority;
 
+	amount_of_tasks += 1;
 
 	return;
 }

@@ -33,6 +33,8 @@
 
 extern task taskList[MAX_TASKS];
 
+extern int amount_of_tasks;
+
 //Global pointers
 task * currentTask;
 task * taskToExecute;
@@ -59,8 +61,6 @@ void SystickISR(void)
                 taskList[idx].state = READY;
         }
     }
-
-	schedule();
 }
 
 /*
@@ -151,8 +151,12 @@ void schedule(void)
  */
 task * getNextTask(void)
 {
-	static int i=0;
+	int i = 0;
 
+	int idx_task = 0;
+	int task_priority_temp = 0;
+
+	/*
 	while(taskList[++i].function == 0)
 	{
 		if(i==3)
@@ -160,6 +164,19 @@ task * getNextTask(void)
 			i = -1;
 		}
 	}
+	*/
 
-	return &taskList[i];
+	for(i = 0; i < amount_of_tasks; i++)
+	{
+	    if(taskList[i].state != WAITING)
+	    {
+            if(taskList[i].uiPriority > task_priority_temp)
+            {
+                idx_task = i;
+                task_priority_temp = taskList[i].uiPriority;
+            }
+	    }
+	}
+
+	return &taskList[idx_task];
 }
