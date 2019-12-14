@@ -51,4 +51,86 @@ Line \ref{line:delay1sec_pop} restores the saved registers and jumps back to the
 It is not an option to leave out the restore to the PC because that means that the next instruction executed will be the one on Line \ref{line:delay1sec_word}.
 This is not an intentional instruction but just a location to store a number. If we let the PC execute this line we get undefined behaviour.
 
+\newpage
+\subsection{Events and the vector table in the ARM Cortex devices}
+\label{subsec:appendix_vector}
 
+The Nested Vector Interrupt Controller (NVIC) is a hardware module within the processor to prioritize events.
+A reader familiar with 8 bit microcontrollers may wonder why we use the term interrupts and events and if they are interchangeable.
+In ARM terminology, an interrupt is one type of exception. 
+Other exceptions in Cortex-M processors include fault exception an other system exceptions to support the OS (e.g., SVC instruction) \cite{DefinitiveGuide}.
+Other readers  familiar with x86 can compare the NVIC to the Programmable Interrupt Controller (PIC). \newline
+
+\begin{lstlisting}[style=CStyle, caption={Vector table used in assignment two and three}, captionpos=b, label={lst:vector_table_complete}, escapechar=|]
+#pragma RETAIN(resetVectors)
+#pragma DATA_SECTION(resetVectors, ".resetVecs")
+void (* const resetVectors[43])(void) =
+{
+    (void (*)(void))((unsigned long)&__STACK_END),
+                                         // The initial stack pointer
+    resetISR,                            // The reset handler
+    nmiISR,                              // The NMI handler
+    faultISR,                            // The hard fault handler
+    defaultHandler,                      // The MPU fault handler
+    busFaultHandler,                     // The bus fault handler
+    defaultHandler,                      // The usage fault handler
+    0,                                   // Reserved
+    0,                                   // Reserved
+    0,                                   // Reserved
+    0,                                   // Reserved
+    defaultHandler,                     // SVCall handler
+    defaultHandler,                      // Debug monitor handler
+    0,                                   // Reserved
+    defaultHandler,                      // The PendSV handler
+    SysTickHandler,                      // The SysTick handler
+    defaultHandler,                      // GPIO Port A0
+    defaultHandler,                      // GPIO Port A1
+    defaultHandler,                      // GPIO Port A2
+    defaultHandler,                      // GPIO Port A3
+    0,                      // Reserved
+    defaultHandler,                      // UART0 Rx and Tx
+    defaultHandler,                      // UART1 Rx and Tx
+    0,                      // Reserved
+    defaultHandler,                      // I2C0 Master and Slave
+    0,                      // Reserved
+    0,                      // Reserved
+    0,                      // Reserved
+    0,                      // Reserved
+    0,                      // Reserved
+    defaultHandler,                      // ADC Sequence 0
+    defaultHandler,                      // ADC Sequence 1
+    defaultHandler,                      // ADC Sequence 2
+    defaultHandler,                      // ADC Sequence 3
+    defaultHandler,                      // Watchdog timer
+    defaultHandler,                      // Timer 0 subtimer A
+    defaultHandler,                      // Timer 0 subtimer B
+    defaultHandler,                      // Timer 1 subtimer A
+    defaultHandler,                      // Timer 1 subtimer B
+    defaultHandler,                      // Timer 2 subtimer A
+    defaultHandler,                      // Timer 2 subtimer B
+    defaultHandler,                      // Timer 3 subtimer A
+    defaultHandler                      // Timer 3 subtimer B
+};
+
+\end{lstlisting}
+
+The order of the entries in this table is important and predetermined.
+Exception 1-15 are system exceptions and exception 16 and above are interrupt inputs \cite{DefinitiveGuide}.
+Exception 1 is always the Reset exception, exception 2 is always the NonMaskable Interrupt (NMI), exception 3 is always Hard Fault and so on \cite{DefinitiveGuide}.
+From exception 16 it is manufacturer dependent. 
+It depends if manufacturers put certain hardware modules in their core or not.
+It is therefore always recommended to check the datasheet of the microcontroller.
+
+\newpage
+When an event occurs there is generally a sequence consisting of 5 steps that occurs \cite{IntroEmbeddedSystems}.
+\begin{enumerate}
+    \item {The current instruction is finished}
+    \item {The execution of the currently running program is suspended, pushing eight registers on the stack (\texttt{R0}, \texttt{R1}, \texttt{R2}, \texttt{R3}, \texttt{R12}, \texttt{LR}, \texttt{PC} and \texttt{PSR} (assuming ARMv7-M architecture)}
+    \item {The \texttt{LR} is set to a specific value signifying an ISR is being run}
+    \item {The \texttt{IPSR} is set to the event number being processed}
+    \item {The \texttt{PC} is loaded with the address of the event handler (from the vector table)}
+\end{enumerate}
+
+The \texttt{IPSR} is the Interrupt Program Status Register and the least 9 significant bits represent the exception number being executed.
+The other Program Status Registers are the Application Program Status Register (\texttt{APSR}) and the Execution Program Status Register (\texttt{EPSR}).
+These will not be explained because they are too much off-topic regarding this report.
