@@ -108,25 +108,25 @@ int main(void)
     HWREG(NVIC_ST_CTRL) = 0x07;         // Enable SysTick, Enable interrupt, CLK_SRC = System clock @\label{line:drm_systick_enabe}@
 
     /* Init LEDS */
-    HWREG(ARCM_BASE + APPS_RCM_O_GPIO_A_CLK_GATING) = 0x01;
+    HWREG(ARCM_BASE + APPS_RCM_O_GPIO_A_CLK_GATING) = 0x01;     @\label{line:drm_systick_gpio_enable}@
 
-    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_9) = 0x60;
+    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_9) = 0x60; @\label{line:drm_systick_pad_one}@
     HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_10) = 0x60;
-    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_11) = 0x60;
+    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_11) = 0x60;@\label{line:drm_systick_pad_three}@
 
-    HWREG(GPIOA1_BASE + GPIO_O_GPIO_DIR) = 0x0E;
-    HWREG(GPIOA1_BASE + GPIO_O_GPIO_DATA + (0x0E << 2)) = 0x00;
+    HWREG(GPIOA1_BASE + GPIO_O_GPIO_DIR) = 0x0E;            @\label{line:drm_systick_dir}@
+    HWREG(GPIOA1_BASE + GPIO_O_GPIO_DATA + (0x0E << 2)) = 0x00; @\label{line:drm_systick_init_data}@
 
     unsigned int index = 0;
 
     while(1)
     {
-        if(!flag_led_update)
-            continue;
+        if(!flag_led_update)        @\label{line:drm_systick_is_update}@
+            continue;               @\label{line:drm_systick_continue}@
 
-        HWREG(GPIOA1_BASE + GPIO_O_GPIO_DATA + (0x0E << 2)) = index;
-        index = (index + 1) % 16;
-        flag_led_update = 0;
+        HWREG(GPIOA1_BASE + GPIO_O_GPIO_DATA + (0x0E << 2)) = index;    @\label{line:drm_systick_set_led}@
+        index = (index + 1) % 16;                                       @\label{line:drm_systick_inc_index}@
+        flag_led_update = 0;                                            @\label{line:drm_systick_clear_flag}@
     }
 
     return 0;
@@ -145,4 +145,58 @@ Every interrupt this variable is incremented (Line \ref{line:drm_systick_inc}) a
 After booting, the first thing done is disabling the \texttt{SysTick} module (Line \ref{line:drm_systick_disable}) by setting all bits in the \texttt{STCTRL} register to 0 (including the \texttt{\scriptsize ENABLE} bit).
 Then it loads the reset value $80 000 - 1$ into the \texttt{STRELOAD} register (Line \ref{line:drm_systick_reload}) and clears the current value and any flags already set (Line \ref{line:drm_systick_current}).
 \texttt{\scriptsize ENABLE}, \texttt{\scriptsize INTEN} and \texttt{\scriptsize CLK\_SRC} bits in the \texttt{STCTRL} register (Figure \ref{fig:stctrl}) are set by writing $00000111_2$ or $0x07_{16}$ to this register.
-From this point in the code the \texttt{SysTick} module is enabled and decrementing.
+From this point in the code the \texttt{SysTick} module is enabled and decrementing.\newline
+
+What now follows is a description of the main code. 
+This is almost identical to the code described in Section \ref{subsec:led_drm}.
+The registers related to GPIO can be found in that section aswell.
+Line \ref{line:drm_systick_gpio_enable} in Listing \ref{lst:led_systick_drm} enables the GPIOA peripheral.
+Line \ref{line:drm_systick_pad_one} up to and including Line \ref{line:drm_systick_pad_three} configures the behaviour of GPIO pin 9, GPIO pin 10 and GPIO pin 11. Those pins are configured to have a maximum current usage of 6 mA.
+Line \ref{line:drm_systick_dir} configures GPIO pin 9, GPIO pin 10 and GPIO pin 11  as an output pin.
+Line \ref{line:drm_systick_init_data} turns those GPIO pins off according to first row of Table \ref{tab:led_scheme}. \newline
+
+The following code is executed in an endless loop.
+Line \ref{line:drm_systick_is_update} and Line \ref{line:drm_systick_continue} were not present in Section \ref{subsec:led_drm}.
+Line \ref{line:drm_systick_is_update} checks if the shared variable \texttt{flag\_led\_update} is set by the \texttt{SysTick} event handler. It it is not Line \ref{line:drm_systick_continue} is executed and the check will be executed again.
+If it is set then Line \ref{line:drm_systick_set_led} up to and including Line \ref{line:drm_systick_clear_flag} will be executed.
+Line \ref{line:drm_systick_set_led} writes the new sequence of LEDs to the GPIO pins.
+Line \ref{line:drm_systick_inc_index} increments the sequence so the next row in Table \ref{tab:led_scheme} will be set next time the shared variable is set.
+Line \ref{line:drm_systick_clear_flag} clears the flag so the next iteration of the loop won't update the LEDs again.
+
+
+
+\begin{lstlisting}[style=CStyle, caption={Part of \texttt{cc3220\_startup\_ccs.c} which contains a part of the vector table}, captionpos=b, label={lst:systick_vector_table_min}, escapechar=@]
+......
+......
+extern void SysTickHandler();
+......
+......
+
+void (* const resetVectors[43])(void) =
+{
+    (void (*)(void))((unsigned long)&__STACK_END),
+                                         // The initial stack pointer
+    resetISR,                            // The reset handler
+    nmiISR,                              // The NMI handler
+    faultISR,                            // The hard fault handler
+    defaultHandler,                      // The MPU fault handler
+    busFaultHandler,                     // The bus fault handler
+    defaultHandler,                      // The usage fault handler
+    0,                                   // Reserved
+    0,                                   // Reserved
+    0,                                   // Reserved
+    0,                                   // Reserved
+    defaultHandler,                     // SVCall handler
+    defaultHandler,                      // Debug monitor handler
+    0,                                   // Reserved
+    defaultHandler,                      // The PendSV handler
+    SysTickHandler,                      // The SysTick handler
+    defaultHandler,                      // GPIO Port A0
+    defaultHandler,                      // GPIO Port A1
+    defaultHandler,                      // GPIO Port A2
+    defaultHandler,                      // GPIO Port A3
+    ......
+    ......
+}
+
+\end{lstlisting}
