@@ -163,7 +163,9 @@ Line \ref{line:drm_systick_set_led} writes the new sequence of LEDs to the GPIO 
 Line \ref{line:drm_systick_inc_index} increments the sequence so the next row in Table \ref{tab:led_scheme} will be set next time the shared variable is set.
 Line \ref{line:drm_systick_clear_flag} clears the flag so the next iteration of the loop won't update the LEDs again.
 
-
+The reader may wonder how the microcontroller knows which function should be executed on a \texttt{SysTick} interrupt.
+This is done using the vector table. This vector table contains different function names for different kind of interrupts (Listing \ref{lst:systick_vector_table_min}).
+Because the function definition \texttt{SysTickHandler} is in \texttt{main.c} we declare it as extern so the compiler will not fail and the linker will search for the external references in a later stage of the compilation process.
 
 \begin{lstlisting}[style=CStyle, caption={Part of \texttt{cc3220\_startup\_ccs.c} which contains a part of the vector table}, captionpos=b, label={lst:systick_vector_table_min}, escapechar=@]
 ......
