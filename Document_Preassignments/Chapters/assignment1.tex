@@ -71,7 +71,7 @@ This program does not enter sleep mode or deep sleep mode. Setting bit 8 and bit
 The behavior of the pins being used must be configured.
 The assignment only requires the use of GPIO9, GPIO10 and GPIO11 because the built-in LEDs are routed to these pins.
 Configuration for these pins are done in Line \ref{line:drm_conf9} up to and including Line \ref{line:drm_conf11}.
-The value 0x60 is written to the \texttt{GPIO\_PAD\_CONFIG\_x} register where x is 9, 10 and 11.
+The value $0x60_{16}$ is written to the \texttt{GPIO\_PAD\_CONFIG\_x} register where x is 9, 10 and 11.
 It affects the second nibble of the register.
 Since only bit 1 and bit 2 of the nibble are affected it does not set the bit in the \texttt{open drain} field (Figure \ref{fig:padconf}).
 Writing $001_{2}$ to the \texttt{DRIVE STRENGTH} field means that the related GPIO pin will drive 6 mA.
@@ -101,8 +101,8 @@ Writing $001_{2}$ to the \texttt{DRIVE STRENGTH} field means that the related GP
 A GPIO pin is either input or output. Writing a 1 to the \texttt{GPIO\_DIR} register (Figure \ref{fig:dirconf}) configures a GPIO pin as output pin.
 Writing a 0 to the \texttt{GPIO\_DIR} register configures a GPIO pin as input pin.
 Because this program only needs GPIO9, GPIO10 and GPIO11 the program needs to write a 1 to bit 1, bit 2 and bit 3 respectively.
-$00001110_{2}$ is 0x0E in hexadecimal representation.
-That is why the program writes 0x0E to the \texttt{GPIO\_DIR} register at Line \ref{line:drm_dir}.
+$00001110_{2}$ is $0x0E_{16}$ in hexadecimal representation.
+That is why the program writes $0x0E_{16}$ to the \texttt{GPIO\_DIR} register at Line \ref{line:drm_dir}.
 
 \begin{figure}[H]
 \centering
@@ -133,7 +133,7 @@ Setting the output pin to logic high or logic low requires a little extra explan
 There is a mask which should be added to the base address plus the address of the \texttt{GPIO\_DATA} register.
 This prevents software from a read-modify-write operation. A change in logic level of an GPIO output pin is done in a single cycle.
 The bits one would like to change should be shifted 2 positions to the right and added to base address + the \texttt{GPIO\_DATA} offset.
-Line \ref{line:drm_init_data} turns the three LEDs off by writing $00000000_{2}$ or 0x00 to the \texttt{GPIO\_DATA} register.
+Line \ref{line:drm_init_data} turns the three LEDs off by writing $00000000_{2}$ or $0x00_{16}$ to the \texttt{GPIO\_DATA} register.
 However, because of the mask added to the address only bit 1, bit 2 and bit 3 are affected.
 
 \begin{figure}[H]

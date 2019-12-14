@@ -1,0 +1,79 @@
+\section{Replace busy-wait techniques using the \texttt{SysTick} timer}
+
+Using a busy-wait technique to delay for a certain amount of time is not efficient.
+Wasting \enquote{expensive} CPU cycles should be avoided whenever possible.
+This is where hardware timers comes in.
+Hardware timers decrement or increment a given value at a certain frequency and generates a signal if the value reached a treshold (this could be in the form of underflow or overflow aswell as reaching a certain value where 0 is the most common one).
+This chapter describes the \texttt{SysTick} hardware timer.
+
+\subsection{\texttt{SysTick} timer and interrupt using DRM}
+
+As mentioned in the previous section, when one uses the DRM programming technique it is important that the programmer knows the microcontroller really well.
+Understanding the different Special Function Registers (SFR) related to the hardware module one wants to use is a consequence.
+The three SFR related to \texttt{SysTick} are described below.
+
+\begin{figure}[H]
+\centering
+
+\begin{bytefield}[endianness=big, bitwidth=3.0em]{30}
+\bitheader[lsb=2]{16-31} \\
+    \bitbox{15}{\tiny Reserved} &
+    \colorbitbox{celadon}{1}{\tiny COUNT} \\ [3ex]
+\bitheader[lsb=-14]{0-15} \\
+    \bitbox{13}{\tiny Reserved}
+    \colorbitbox{celadon}{1}{\tiny CLK\_SRC}
+    \colorbitbox{celadon}{1}{\tiny INTEN}
+    \colorbitbox{celadon}{1}{\tiny ENABLE}
+\end{bytefield}
+
+\caption{\texttt{STCTRL} register for the CC3220s}
+\label{fig:stctrl}
+
+\end{figure}
+
+First, there is \texttt{STCTRL} (\texttt{SysTick} Control Register) which enables the \texttt{SysTick} features \cite{CC3220s_reference_manual}.
+Bit 0 (Figure \ref{fig:stctrl}) enables the \texttt{SysTick} module if this bit is set or disables the \texttt{SysTick} module if this bit is cleared.
+The \texttt{SysTick} module will generate an interrupt only if bit 1 is set.
+The clock source fed into the \texttt{SysTick} module can be the system clock if bit 3 is set or a precision internal oscillator if bit 3 is cleared \cite{CC3220s_reference_manual}.
+
+
+\begin{figure}[H]
+\centering
+
+\begin{bytefield}[endianness=big, bitwidth=3.0em]{30}
+\bitheader[lsb=2]{16-31} \\
+    \bitbox{8}{\tiny Reserved} &
+    \colorbitbox{celadon}{8}{\tiny RELOAD} \\ [3ex]
+\bitheader[lsb=-14]{0-15} \\
+    \colorbitbox{celadon}{16}{\tiny RELOAD}
+\end{bytefield}
+
+\caption{\texttt{STRELOAD} register for the CC3220s}
+\label{fig:streload}
+
+\end{figure}
+
+Second, there is \texttt{STRELOAD} register (Figure \ref{fig:streload}) which stores the constant that should be loaded to the \texttt{STCURRENT} register if the previous value reached value 0.
+One should keep in mind that if the desired behaviour is an interrupt or a flag every $x$ ticks, one should store $x - 1$ ticks in this register.
+This is because the \texttt{RELOAD} value is copied to \texttt{STCURRENT} current register if 0 is reached (so not one tick after zero).
+
+\begin{figure}[H]
+\centering
+
+\begin{bytefield}[endianness=big, bitwidth=3.0em]{30}
+\bitheader[lsb=2]{16-31} \\
+    \bitbox{8}{\tiny Reserved} &
+    \colorbitbox{celadon}{8}{\tiny CURRENT} \\ [3ex]
+\bitheader[lsb=-14]{0-15} \\
+    \colorbitbox{celadon}{16}{\tiny CURRENT}
+\end{bytefield}
+
+\caption{\texttt{STCURRENT} register for the CC3220s}
+\label{fig:stcurrent}
+
+\end{figure}
+
+The last register is the \texttt{STCURRENT} register.
+This register holds the current value being decremented.
+An important detail is that the \texttt{CURRENT} field is write-clear behaviour.
+This means that writing any value to this field clears the register and the \texttt{COUNT} bit of the \texttt{STCTRL} register \cite{CC3220s_reference_manual}.
