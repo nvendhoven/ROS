@@ -77,3 +77,72 @@ The last register is the \texttt{STCURRENT} register.
 This register holds the current value being decremented.
 An important detail is that the \texttt{CURRENT} field is write-clear behaviour.
 This means that writing any value to this field clears the register and the \texttt{COUNT} bit of the \texttt{STCTRL} register \cite{CC3220s_reference_manual}.
+
+\newpage
+\begin{lstlisting}[style=CStyle, caption={Toggling LEDs according to Table \ref{tab:led_scheme} using DRM programming technique}, captionpos=b, label={lst:led_systick_drm}, escapechar=@]
+#include <stdint.h>
+#include <stddef.h>
+#include "register_def.h"
+
+#include "inc\hw_memmap.h"
+#include "inc\hw_gpio.h"
+#include "inc\hw_apps_rcm.h"
+#include "inc\hw_ocp_shared.h"
+
+static volatile _Bool flag_led_update;  @\label{line:drm_systick_flag}@
+
+void SysTickHandler()   @\label{line:drm_systick_irq}@
+{
+    static int tick_count = 0;
+    flag_led_update = tick_count == 1000 ? 1 : 0;   @\label{line:drm_systick_set_flag}@
+    tick_count = (tick_count+1) % (1000 + 1);       @\label{line:drm_systick_inc}@
+}
+
+int main(void)
+{
+
+    /* Init SysTick */
+    HWREG(NVIC_ST_CTRL) = 0x00;         // Disable SysTick during setup     @\label{line:drm_systick_disable}@
+    HWREG(NVIC_ST_RELOAD) = 79999;      // Get every millisecond an interrupt (80 000 - 1)  @\label{line:drm_systick_reload}@
+    HWREG(NVIC_ST_CURRENT) = 0x00;      // Clear any flags and set current value to 0       @\label{line:drm_systick_current}@
+    HWREG(NVIC_ST_CTRL) = 0x07;         // Enable SysTick, Enable interrupt, CLK_SRC = System clock @\label{line:drm_systick_enabe}@
+
+    /* Init LEDS */
+    HWREG(ARCM_BASE + APPS_RCM_O_GPIO_A_CLK_GATING) = 0x01;
+
+    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_9) = 0x60;
+    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_10) = 0x60;
+    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_11) = 0x60;
+
+    HWREG(GPIOA1_BASE + GPIO_O_GPIO_DIR) = 0x0E;
+    HWREG(GPIOA1_BASE + GPIO_O_GPIO_DATA + (0x0E << 2)) = 0x00;
+
+    unsigned int index = 0;
+
+    while(1)
+    {
+        if(!flag_led_update)
+            continue;
+
+        HWREG(GPIOA1_BASE + GPIO_O_GPIO_DATA + (0x0E << 2)) = index;
+        index = (index + 1) % 16;
+        flag_led_update = 0;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+Listing \ref{lst:led_systick_drm} shows the programming source code to toggle the LEDs using the \texttt{SysTick} timer module to delay the correct amount of time.
+Line \ref{line:drm_systick_flag} contains a shared variable which is used as a flag. If this variable is set the main loop should toggle the LEDs in the next row in Table \ref{tab:led_scheme}. If this variable is not set then the main loop has to do nothing.
+Line \ref{line:drm_systick_irq} is the entry point for the \texttt{SysTick} event handler.
+Every time a \texttt{SysTick} interrupt occurs this piece of event handler code is executed.
+There should be a delay of 1 second between every row in Table \ref{tab:led_scheme}. Since the \texttt{SysTick} interrupt is executed every 1 millisecond the code should execute the \texttt{SysTick} handler 1000 times before updating the shared variable.
+\texttt{tick\_count} takes care of that. This static variable does not lose its content between two execution runs of the event handler.
+Every interrupt this variable is incremented (Line \ref{line:drm_systick_inc}) and when its incremented 1000 times the shared variable is set (Line \ref{line:drm_systick_set_flag}). 
+
+\newpage
+After booting, the first thing done is disabling the \texttt{SysTick} module (Line \ref{line:drm_systick_disable}) by setting all bits in the \texttt{STCTRL} register to 0 (including the \texttt{\scriptsize ENABLE} bit).
+Then it loads the reset value $80 000 - 1$ into the \texttt{STRELOAD} register (Line \ref{line:drm_systick_reload}) and clears the current value and any flags already set (Line \ref{line:drm_systick_current}).
+\texttt{\scriptsize ENABLE}, \texttt{\scriptsize INTEN} and \texttt{\scriptsize CLK\_SRC} bits in the \texttt{STCTRL} register (Figure \ref{fig:stctrl}) are set by writing $00000111_2$ or $0x07_{16}$ to this register.
+From this point in the code the \texttt{SysTick} module is enabled and decrementing.
