@@ -1,0 +1,148 @@
+\section{Creating a scheduler using \texttt{SysTick} }
+Now we create a simple scheduler that can run periodic tasks. There are three different tasks the scheduler
+should execute; blink a red, a yellow and a green LED for a given period, after a 
+given delay in ticks. Table \ref{tab:led_schedule} lists the requirements for these tasks.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+         & \textcolor{darkpink}{\textit{Toggle Period}} & \textcolor{darkpink}{\textit{Initial Delay}}\\
+        \hline
+        \textit{Red} & 200 & 100 \\
+        \hline
+        \textit{Yellow} & 500 & 200 \\
+        \hline
+        \textit{Green} & 750 & 300 \\
+        \hline
+    \end{tabular}
+        
+    \label{tab:led_schedule}
+    \caption{Requirements blinking LEDs in Ticks}
+\end{table}
+
+
+\subsection{Scheduling Tasks}
+A few parameters are required to create a such a tasks. Therefor a \texttt{struct} is created to contain
+relevant task data as shown in Listing \ref{lst:def_scheduler}. This is named \texttt{OS\_tcb} for Task Control Block. The type definition of this \textit{struct} is seen on Line \ref{line:OS_tcb}.
+The first important variable in the tbc is a pointer to the function the task should execute. The tbc also contains
+a \texttt{tick\_period} in which it stores the total amount of ticks the task waits before running. The last variable,
+contains the state of the tbc. These states are defined in Line \ref{line:OS_state} as \texttt{OS\_state}. The states of a 
+tcb are; READY, when the task is ready to be executed by the scheduler, and WAITING, when the task is being delayed.
+\\\\
+The scheduler is capable of holding a array of 8 tasks maximum which is implemented as a global variable at Line
+\ref{line:tasks_array}. At Line \ref{line:amount_tasks} a number of the actual amounts of tasks is held since the scheduler is not always scheduling 8 tasks. This will
+increase every time a task is added to the scheduler, making it more dynamic. 
+
+\begin{lstlisting}[style=CStyle, caption={Defining Task structure and States}, captionpos=b, label={lst:def_scheduler}, escapechar=@]
+#include "blinky_tasks.h"
+
+typedef enum
+{
+    STATE_READY = 0,
+    STATE_WAITING
+} OS_state; @\label{line:OS_state}@
+
+typedef struct
+{
+    void (*task_function)(void);
+    uint32_t tick_period;
+    uint32_t ticks_used;
+    OS_state state;
+} OS_tcb;   @\label{line:OS_tcb}@
+
+/* Global variables*/
+OS_tcb tasks[8]; @\label{line:tasks_array}@
+size_t amount_tasks = 0; @\label{line:amount_tasks}@
+\end{lstlisting}
+
+
+
+\begin{lstlisting}[style=CStyle, caption={Task controllers}, captionpos=b, label={lst:task_control_functions}, escapechar=@]
+void OS_add_task(void (*task_function)(void), uint32_t tick_period, uint32_t ticks_init_delay)
+{
+    tasks[amount_tasks].task_function = task_function;
+    tasks[amount_tasks].tick_period = tick_period;
+    tasks[amount_tasks].ticks_used = ticks_init_delay;
+    tasks[amount_tasks++].state = STATE_WAITING;
+}
+
+void OS_run_ready_tasks()
+{
+    for(size_t idx = 0; idx != amount_tasks; idx++)
+        if(tasks[idx].state == STATE_READY)
+        {
+            (*tasks[idx].task_function)();
+            tasks[idx].state = STATE_WAITING;
+        }
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=CStyle, caption={Scheduler SysTick}, captionpos=b, label={lst:scheduler_systick}, escapechar=@]
+void SystickHandler()
+{
+    for(size_t idx = 0; idx != amount_tasks; idx++)
+    {
+        tasks[idx].ticks_used -= 1;
+        if(tasks[idx].ticks_used == 0)
+        {
+            if(tasks[idx].state == STATE_WAITING)
+                tasks[idx].state = STATE_READY;
+            tasks[idx].ticks_used = tasks[idx].tick_period;
+        }
+    }
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=CStyle, caption={Scheduler using SysTick Main function}, captionpos=b, label={lst:scheduler_systick_main}, escapechar=@]
+int main(void)
+{
+
+    HWREG(ARCM_BASE + APPS_RCM_O_GPIO_A_CLK_GATING) = 0x01;
+
+    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_9) = 0x60;
+    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_10) = 0x60;
+    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_11) = 0x60;
+
+    HWREG(GPIOA1_BASE + GPIO_O_GPIO_DIR) = 0x0E;
+    HWREG(GPIOA1_BASE + GPIO_O_GPIO_DATA + (0x0E << 2)) = 0x00;
+
+    HWREG(NVIC_ST_CTRL) = 0x00;         /* Disable SysTick during setup */
+    HWREG(NVIC_ST_RELOAD) = 0x13880;    /* 80 000 reload value (1000p/s interrupt) */
+    HWREG(NVIC_ST_CURRENT) = 0x00;      /* Clear any flags and set current value to 0 */
+    HWREG(NVIC_ST_CTRL) = 0x07;         /* Enable SysTick, Enable interrupt, CLK_SRC = System clock */
+
+    OS_add_task(blinky_red, RED_PERIOD, 100);
+    OS_add_task(blinky_yellow, YELLOW_PERIOD, 200);
+    OS_add_task(blinky_green, GREEN_PERIOD, 300);
+
+    while(1)
+        OS_run_ready_tasks();
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{Blinky LED}
+\begin{lstlisting}[style=CStyle, caption={Toggling LED tasks according to Table \ref{tab:led_schedule} }, captionpos=b, label={lst:led_tasks}, escapechar=@]
+#define RED_PERIOD      200
+#define YELLOW_PERIOD   500
+#define GREEN_PERIOD    750
+
+void blinky_red(void)
+{
+    HWREG(GPIOA1_BASE + GPIO_O_GPIO_DATA + (0x02 << 2)) ^= 0x02;
+}
+
+void blinky_yellow(void)
+{
+    HWREG(GPIOA1_BASE + GPIO_O_GPIO_DATA + (0x04 << 2)) ^= 0x04;
+}
+
+void blinky_green(void)
+{
+    HWREG(GPIOA1_BASE + GPIO_O_GPIO_DATA + (0x08 << 2)) ^= 0x08;
+}
+\end{lstlisting}
+
+
