@@ -1,6 +1,6 @@
 \section{Creating a scheduler using \texttt{SysTick} }
-Now we create a simple scheduler that can run periodic tasks. There are three different tasks the scheduler
-should execute; blink a red, a yellow and a green LED for a given period, after a 
+The next step is creating a simple scheduler that can run periodic tasks. There are three different tasks the scheduler
+should execute; blink a red, a yellow and a green LED for a given period after a 
 given delay in ticks. Table \ref{tab:led_schedule} lists the requirements for these tasks.
 
 \begin{table}[H]
@@ -21,20 +21,31 @@ given delay in ticks. Table \ref{tab:led_schedule} lists the requirements for th
     \caption{Requirements blinking LEDs in Ticks}
 \end{table}
 
+The code that will be presented in Subsection \ref{subsec:schedule_task} is actually all located in the same file, namely \texttt{main.c}.
+However, for the sake of clarity to the reader the code is split up into different listings which makes it easier to understand what piece of code is for what reason present.
 
 \subsection{Scheduling Tasks}
-A few parameters are required to create a such a tasks. Therefor a \texttt{struct} is created to contain
-relevant task data as shown in Listing \ref{lst:def_scheduler}. This is named \texttt{OS\_tcb} for Task Control Block. The type definition of this \textit{struct} is seen on Line \ref{line:OS_tcb}.
-The first important variable in the tbc is a pointer to the function the task should execute. The tbc also contains
-a \texttt{tick\_period} in which it stores the total amount of ticks the task waits before running. The last variable,
-contains the state of the tbc. These states are defined in Line \ref{line:OS_state} as \texttt{OS\_state}. The states of a 
-tcb are; READY, when the task is ready to be executed by the scheduler, and WAITING, when the task is being delayed.
-\\\\
-The scheduler is capable of holding a array of 8 tasks maximum which is implemented as a global variable at Line
-\ref{line:tasks_array}. At Line \ref{line:amount_tasks} a number of the actual amounts of tasks is held since the scheduler is not always scheduling 8 tasks. This will
-increase every time a task is added to the scheduler, making it more dynamic. 
+\label{subsec:schedule_task}
 
-\begin{lstlisting}[style=CStyle, caption={Defining Task structure and States}, captionpos=b, label={lst:def_scheduler}, escapechar=@]
+Different tasks have different characteristics. Some housekeeping is required to map those characteristics to different functions (the behaviour a task is executing).
+Those housekeeping goes into what's called a Task Control Block (TCB) \cite{SROS}, \cite{usosii}.
+This TCB is defined in Listing \ref{lst:def_scheduler} at Line \ref{line:OS_tcb}.
+Characteristics of a task is the function it executes (usually a pointer pointing to the function definition), the period time this function should be called, the amount of time it waits untill it is ready to be woken up and execute the function again as the new period arose and a state.
+This state is defined in Line \ref{line:OS_state}.
+Usually there are three states which is \texttt{STATE\_READY}, \texttt{STATE\_WAITING} and \texttt{STATE\_RUNNING} \cite{SROS}, \cite{usosii}.
+Because this scheduler is almost too simple only \texttt{STATE\_READY} and \texttt{STATE\_WAITING} are necessary.
+
+\begin{lstlisting}[style=CStyle, caption={Definition code where a state datatype and housekeeping datatype for tasks is made}, captionpos=b, label={lst:def_scheduler}, escapechar=@]
+#include <stdint.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include "register_def.h"
+
+#include "inc\hw_memmap.h"
+#include "inc\hw_gpio.h"
+#include "inc\hw_apps_rcm.h"
+#include "inc\hw_ocp_shared.h"
+
 #include "blinky_tasks.h"
 
 typedef enum
@@ -56,7 +67,9 @@ OS_tcb tasks[8]; @\label{line:tasks_array}@
 size_t amount_tasks = 0; @\label{line:amount_tasks}@
 \end{lstlisting}
 
-
+There are two global variables used in other parts within the same file.
+\texttt{tasks} (Line \ref{line:tasks_array}) is an array that has space for 8 \texttt{OS\_tcb} objects which means a maxmimum of 8 tasks are schedulable by this scheduler unless a programer changes this number.
+\texttt{amount\_tasks} keeps track howmuch stores \texttt{OS\_tcb} objects are in the \texttt{tasks} array.
 
 \begin{lstlisting}[style=CStyle, caption={Task controllers}, captionpos=b, label={lst:task_control_functions}, escapechar=@]
 void OS_add_task(void (*task_function)(void), uint32_t tick_period, uint32_t ticks_init_delay)
