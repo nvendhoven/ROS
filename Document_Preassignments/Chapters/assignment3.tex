@@ -198,9 +198,6 @@ void blinky_green(void);
 The implementation of the functions is not exciting.
 In fact, all the functions are actually one-liners (see Listing \ref{lst:toggle_leds_systick_sched}).
 They set another bit pattern to the red LED, yellow LED and the green LED.
-Only one single LED can be on at a time.
-
-
 
 \begin{lstlisting}[style=CStyle, caption={Toggling LED tasks according to Table \ref{tab:led_schedule} }, captionpos=b, label={lst:toggle_leds_systick_sched}, escapechar=@]
 #include "register_def.h"
@@ -226,4 +223,22 @@ void blinky_green(void)
 }
 \end{lstlisting}
 
+\subsection{Verification of the timing specification}
 
+Figure \ref{fig:systick_sched_ver} contains the output of the logic analyzer after running the program free for a couple of seconds.
+Channel 0, channel 1 and channel 2 are connected to the red LED, yellow LED and green LED respectively.
+According to Table \ref{tab:led_schedule} the red LED should toggle every 200 ticks (where 1 tick is equal to 1 millisecond).
+The logic analyzer shows that the red LED contains a logic high level for 0.2001 seconds which is close enough to 200 milliseconds.
+
+\begin{figure}[H]
+    \centering
+
+    \includegraphics[scale=0.43]{img/SystickScheduler.png}
+
+\caption{Saleae logic analyzer trace after the program ran free for a couple of seconds}
+\label{fig:systick_sched_ver}
+
+\end{figure}
+
+The yellow LED is logic high for 0.5001 seconds and the green LED is logic high for 0.7502 seconds.
+One can conclude that the timing specifications in Table \ref{tab:led_schedule} are met.
