@@ -359,7 +359,7 @@ void SysTickHandler()
 
 void next_state(state_t newState, unsigned int delayInSeconds)
 {
-    while((tick/1000) <= delayInSeconds)
+    while((tick/1000) < delayInSeconds)
         PRCMSleepEnter();   @\label{line:ss_sleep}@
 
     tick = 0;               @\label{line:ss_reset_ticks}@
@@ -433,3 +433,37 @@ int main(void)
     return 0;
 }
 \end{lstlisting}
+
+\newpage
+\subsection{Verification of the timing specifications}
+
+
+\begin{figure}[H]
+    \centering
+
+    \includegraphics[scale=0.43]{img/yellow.png}
+
+    \caption{The yellow LED is lit for 1.001 seconds}
+    \label{fig:yellow}
+
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+
+    \includegraphics[scale=0.43]{img/green.png}
+
+    \caption{The green LED is lit for 4.002 seconds}
+    \label{fig:green}
+
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+
+    \includegraphics[scale=0.43]{img/red.png}
+
+    \caption{The red LED is lit for 5.002 seconds}
+    \label{fig:red}
+
+\end{figure}
