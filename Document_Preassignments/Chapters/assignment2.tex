@@ -319,8 +319,8 @@ The characteristics of the different coloured lights can be seen in Table \ref{t
         \hline
     \end{tabular}
             
-    \label{tab:led_trafficlight}
     \caption{Timing characteristics for the different colours of the traffic light}
+    \label{tab:led_trafficlight}
 \end{table}
 
 The code is split up into two parts to keep the overview.
@@ -437,6 +437,8 @@ int main(void)
 \newpage
 \subsection{Verification of the timing specifications}
 
+According to Table \ref{tab:led_trafficlight} the yellow LED should be lit for 1 second.
+Channel 1 is connected to the yellow LED. Figure \ref{fig:yellow} shows that the yellow LED is lit for 1.001 seconds.
 
 \begin{figure}[H]
     \centering
@@ -448,6 +450,9 @@ int main(void)
 
 \end{figure}
 
+According to Table \ref{tab:led_trafficlight} the green LED should be lit for 4 seconds.
+Channel 2 is connected to the green LED. Figure \ref{fig:green} shows that the green LED is lit for 4.002 seconds.
+
 \begin{figure}[H]
     \centering
 
@@ -458,6 +463,9 @@ int main(void)
 
 \end{figure}
 
+According to Table \ref{tab:led_trafficlight} the red LED should be lit for 5 seconds.
+Channel 0 is connected to the red LED. Figure \ref{fig:red} shows that the red LED is lit for 5.002 seconds.
+
 \begin{figure}[H]
     \centering
 
@@ -467,3 +475,6 @@ int main(void)
     \label{fig:red}
 
 \end{figure}
+
+The desired amount of time a certain LED should be lit and the actual time the LED is lit is nearly the same.
+One may conclude that the software results in the correct behaviour both from a functional and time requirement perspective.
