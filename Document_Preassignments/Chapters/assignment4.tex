@@ -1,0 +1,185 @@
+\section{A basic Real-Rime Operating System and \enquote{clever} scheduler}
+
+A basic Real-Time Operating System and schudler can now be written.
+In fact, the basic Real-Time Operating System has already been developed by Daniel Versluis.
+From now on in this document we call this basic Real-Time Operating System \enquote{VersdOS}.
+This RTOS has a global variable \texttt{taskList} which is an array of type \texttt{task}.
+This datatype \texttt{task} can be seen in Listing \ref{lst:versd_task}.
+Every task has its own stack and thus a pointer to the stack.
+A task has a function pointer pointing to the function it should be executing if the task is ready to be run.
+Also described in the previous section, every task has a state. VersdOS acknowledges three states. 
+The first one is \texttt{RUNNING}, the second one is \texttt{READY} and the last one is \texttt{WAITING}.
+\texttt{uiPriority} is the priority of the task. The higher this number the higher the priority.
+\texttt{uiCounter} is a variable containing a number. If a task is in the \texttt{WAITING} state this number is decremented each SysTick interrupt.
+
+\begin{lstlisting}[style=CStyle, caption={Task control block for VersdOS}, captionpos=b, label={lst:versd_task}, escapechar=@]
+typedef struct _task{
+	int * 			stack; 				//pointer to the stack (on the heap?)
+
+	void(*function)(void);				//function to execute
+	enum taskState	state;				//Tasks have a state
+	uint8_t 		uiPriority;			//Tasks have a priority
+	uint32_t		uiCounter;			//Tasks have a counter for delays
+
+	char			bInitialized;		//After initialization the stack also contains R4-R11
+} task;
+\end{lstlisting}
+
+The current implementation of the core functionality of the scheduler, which is selecting the next task to run, can be seen in Listing \ref{lst:versd_old_sched}.
+There are three tasks. One that toggles the red LED, one that toggles the green LED and one that toggles the yellow LED.
+The scheduler is aware of the amount of tasks but its hard coded. This is very bad practice and makes a scheduler only usable for a certain set of task jobs \cite{IntroEmbeddedRtosSystems}.
+The current implementation is ignoring the \texttt{uiPriority} member variable of the task control block aswell.
+
+\begin{lstlisting}[style=CStyle, caption={A relatively stupid scheduler}, captionpos=b, label={lst:versd_old_sched}, escapechar=@]
+/*
+ * Our genuine scheduler. Currently very static and
+ * not-advanced
+ *
+ * returns a pointer to the selected task
+ */
+task * getNextTask(void)
+{
+	static int i=0;
+
+	while(taskList[++i].function == 0)
+	{
+		if(i==3)
+		{
+			i = -1;
+		}
+	}
+
+	return &taskList[i];
+}
+\end{lstlisting}
+
+This scheduler in Listing \ref{lst:versd_old_sched} is not real time as it is not taking the characteristics or deadlines of any task into account.
+A better implementation in terms of guarantees and taking real-time characteristics into account is proposed in Listing \ref{lst:versd_new_sched}.
+
+\newpage
+\begin{lstlisting}[style=CStyle, caption={An improved scheduler taking task characteristics into account}, captionpos=b, label={lst:versd_new_sched}, escapechar=@]
+/*
+ * Our genuine scheduler. Currently very static and
+ * not-advanced
+ *
+ * returns a pointer to the selected task
+ */
+task * getNextTask(void)
+{
+    int i = 0;
+
+    int idx_task = 0;
+    int task_priority_temp = 0;
+
+    for(i = 0; i < amount_of_tasks; i++)
+    {
+	    if(taskList[i].state != WAITING)
+	    {
+            if(taskList[i].uiPriority > task_priority_temp)
+            {
+                idx_task = i;
+                task_priority_temp = taskList[i].uiPriority;
+            }
+        }
+    }
+
+    return &taskList[idx_task]; @\label{line:versd_idle_select}@
+}
+\end{lstlisting}
+
+One can argue \enquote{what happends if all tasks are \texttt{WAITING}?}
+\texttt{taskList[0]} always contains the idle task.
+That is why variable \texttt{idx\_task} is set to 0 before the for-loop starts.
+If no other tasks wants to use the micrcoprocessor then the idle task will be returned in Line \ref{line:versd_idle_select}.
+This idle task can be seen in Listing \ref{lst:versd_idle_task}.
+All it does is setting the microprocessor in a sleep mode untill an event occurs.
+
+\begin{lstlisting}[style=CStyle, caption={An idle task basically setting the microprocesor in a sleep mode}, captionpos=b, label={lst:versd_idle_task}, escapechar=@]
+void idleTask(void)
+{
+    __asm("    wfi");
+}
+\end{lstlisting}
+
+
+Another thing that the authors noticed is the current implementation of a delay function to temporarry halt a certain task.
+The old implementation can be seen in Listing \ref{lst:versd_old_delay}.
+This delay function depends on the clock frequency and compiler generated instructions.
+In addition, a task is not sleeping. IT is doing a function call to \texttt{delay} and hopes when the function returns it slept long enough.
+It keeps sitting on the CPU executing dumb \texttt{SUBS} instructions.
+Other tasks in the \texttt{READY} state cannot claim the CPU as the \texttt{RUNNING} task keeps the CPU busy by doing meaningless calculations (if it calls the \texttt{delay} functions).
+The authors agree with Daniel Versluis that this is an unworthy \texttt{delay} function.
+\begin{lstlisting}[style=CStyle, caption={An unworthy delay function, according to Daniel Versluis}, captionpos=b, label={lst:versd_old_delay}, escapechar=@]
+//unworthy delay function
+void delay(unsigned int count)
+{
+    while(count--);
+}
+
+\end{lstlisting}
+
+The authors propose a worthy \texttt{delay} function. The implementation details can be seen in Listing \ref{lst:versd_new_delay}.
+
+
+\newpage
+\begin{lstlisting}[style=CStyle, caption={A worhy \texttt{delay} function, according to the authors}, captionpos=b, label={lst:versd_new_delay}, escapechar=@]
+void delayTask(unsigned int ticks)
+{
+    for(int idx = 0; idx < MAX_TASKS; idx++)    @\label{line:versd_search_running}@
+    {
+        if(taskList[idx].state == RUNNING){     @\label{line:versd_is_running}@
+            taskList[idx].uiCounter = ticks;
+            taskList[idx].state = WAITING;
+        }
+    }
+    schedule();     @\label{line:versd_delay_call_schedule}@
+}
+\end{lstlisting}
+
+The proposed \texttt{delay} deserves some explanation as it may not seem trivial in the first place.
+This implementation makes use of a property of a single core microprocessor.
+Only one task at a certain point in time can have the \texttt{RUNNING} state.
+If the function \texttt{delay} is entered it must be called from the current \texttt{RUNNING} task.
+It assumes the function call is atomic and no scheduling happends when between the function is called and the state of the running task is set to \texttt{WAITING}.
+The loop in Line \ref{line:versd_search_running} searches through the list of registered tasks.
+If the condition in Line \ref{line:versd_is_running} is true it means that the \texttt{RUNNING} task is found.
+If it is found the \texttt{uiCounter} variable which is decremented each \texttt{SysTickHandler} interrupt is decremented is set to the desired amount of ticks passed via the function parameter.
+The \texttt{state} is set to \texttt{WAITING}.
+The housekeeping is set. The task is ready to be put in \texttt{WAITING} mode.
+1 important detail remains.
+A new task should be selected to be run on the microprocessor.
+The function call in Line \ref{line:versd_delay_call_schedule} will take care of this.
+This function \texttt{schedule} can be seen in Listing \ref{lst:versd_new_schedule}.
+
+\begin{lstlisting}[style=CStyle, caption={\texttt{schedule} will call the helper function \texttt{getNextTask} and makes sure that task is actually executed}, captionpos=b, label={lst:versd_new_schedule}, escapechar=@]
+void schedule(void)
+{
+	//This is our true scheduler function
+	//select a new task to run
+	taskToExecute = getNextTask();
+
+	//Only if the new task isn't equal to the current one,
+	//call the context switch
+	if(taskToExecute != currentTask || taskToExecute->bInitialized==0)
+	{
+		//States to help the scheduler decide
+		//currentTask->state = READY;
+		taskToExecute->state = RUNNING;
+
+		//call pendsv interrupt to perform the context switch
+		HWREG(NVIC_INT_CTRL)  |= (1<<28);
+
+	}else{
+		//Clearly no need to switch anything so we
+		//just restore things like they were before the Systick
+
+		currentTask->state	 = RUNNING;
+	}
+}
+\end{lstlisting}
+
+Because of lack of time there was no time to show prove using the logic analyzer that this implementation works.
+Various instructors have seen during labs that it works and signed off the authors name on a list of assignments.
+If the reader still wants proof then he or she must send an e-mail to one of the authors e-mail addresses on the title page.
+
+
