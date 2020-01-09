@@ -148,8 +148,8 @@ These 4 different shared resources with their respective maximum hold time are g
         \hline
     \end{tabular}
 
+    \caption{Characteristics of the available shared resources. }
     \label{tab:resource_characteristics}
-    \caption{Characteristics of the available shared resources}
 \end{table}
 This document uses task characteristics letters compatible with the letters defined by Cheng in \.
 Task $T_i$ has a maximum computation time $c_i$, a deadline $d_i$ and a period $p_i$.
@@ -179,8 +179,8 @@ The characteristics of the various real-time tasks in this system can be seen in
 
     \end{tabular}
     
-    \label{tab:task_characteristics}
     \caption{Characteristics of the different tasks}
+    \label{tab:task_characteristics}
 \end{table}
 
 The goal of this document is to prove whether the given real-time tasks in Table \ref{tab:task_characteristics} are Deadline Monotonic schedulable taking into account the shared resources in Table \ref{tab:resource_characteristics}.
@@ -192,10 +192,10 @@ Section \ref{sec:simple_test} uses a couple of simple schedulability tests not t
 \label{sec:simple_test}
 
 For the reader who is not familiar with the term schedulability test, a schedulability test is used to validate that a given application can satisfy its specified deadlines when scheduled according to a specific scheduling algorithm \cite{cheng}.
-For the reader who is not familiar with the term schedulabe utilization, the schedulable utilization is the maximum utilization allowed for a set of tasks that will guarantee a feasible scheduling for the task set \cite{cheng}.
+For the reader who is not familiar with the term schedulabe utilization, the schedulable utilization is the maximum utilization allowed for a set of tasks that will guarantee a feasible scheduling for the jobset \cite{cheng}.
 Now we can represent the first schedulability test.
-Give a set of $n$ independent, preemptable and period tasks on a uniprocessor, let $U$ be the total utilization of this task set.
-A necessary and sufficient condition for feasible scheduling of this task set is Equation \ref{eq:eq1}
+Given a set of $n$ independent, preemptable and period tasks on a uniprocessor, let $U$ be the total utilization of this task set.
+A necessary and sufficient condition for feasible scheduling of this jobset is Equation \ref{eq:eq1}
 
 \begin{equation}
     U = \sum_{i=1}^{n} \frac{c_i}{p_i} \leq 1
@@ -216,8 +216,19 @@ If this test fails it does not men that the jobset is not schedulable.
 Given a set of $n$ independent, preemtable and period tasks on a uniprocessor, let $U$ be the total utilization of this jobset.
 A sufficient condition for feasible scheduling of this jobset is Equation \ref{eq:eq3}.
 \begin{equation}
-    U = \sum_{i}^{n} \frac{c_i}{p_i} \leq n(2^{\frac{1}{n}} - 1)
+    U = \sum_{i=1}^{n} \frac{c_i}{p_i} \leq n(2^{\frac{1}{n}} - 1)
     \label{eq:eq3}
+\end{equation}
+
+However, the condition is Equation \ref{eq:eq3} may result in under-utilization of the CPU \cite{cheng}.
+Imagine $n \rightarrow \infty$ then the utilization is $ \ln(2)$ or $\approx0.693$.
+Using Equation \ref{eq:eq3} with the jobset defined in Table \ref{tab:task_characteristics} results in an elaboration seen in Equation \ref{eq:eq4}.
+0.90 is not less than or equal to $5(2^{\frac{1}{5}} - 1)$ which is approximately 0.74.
+This means that this test can not ensure that the jobset is schedulable, but it might still be possible.
+
+\begin{equation}
+    U = \sum_{i=i}^{5} \frac{c_i}{p_i} = \frac{90}{400} + \frac{50}{600} + \frac{30}{900} + \frac{40}{700} + \frac{100}{200} \approx 0.90 \text{  which should be } \leq  5(2^{\frac{1}{5}} - 1)  
+    \label{eq:eq4}
 \end{equation}
 
 \section*{acknowledgements}
