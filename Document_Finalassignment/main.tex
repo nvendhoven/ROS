@@ -231,6 +231,17 @@ This means that this test can not ensure that the jobset is schedulable, but it 
     \label{eq:eq4}
 \end{equation}
 
+\section{Schedulability test without taking shared resources}
+
+This section will present the reader a shedulability test which can guarantee whether the jobset is Deadline Monotonic schedulable or not.
+It does not take the shared resources into account.
+The reader may wonder why we dedicate a section about proving whether the jobset is Deadline Monotonic schedulable without taking the shared resources into account.
+If this section proves that the jobset is not Deadline Monotonic schedulable without taking the shared resources into account then the jobset will not be Deadline Monotonic schedulable taking the shared resources into account.
+The prove whether the jobset is Deadline Monotonic which will be presented in the next section is an extension on the schedulability test presented in this section.
+
+
+
+
 \section*{acknowledgements}
 %Note correct LaTeX quotations above. Do not use the " symbol, but rather double ` followed by double '
 
