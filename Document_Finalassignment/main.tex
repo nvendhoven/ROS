@@ -211,6 +211,14 @@ Equation \ref{eq:eq2} contains the elaboration.
 \end{equation}
 
 Since the CPU utilization is less than 1 we can conclude that the jobset may be schedulable.
+We can use the schedulability test in Equation \ref{eq:eq3} to test if the jobset can be guaranteed scheduled.
+If this test fails it does not men that the jobset is not schedulable.
+Given a set of $n$ independent, preemtable and period tasks on a uniprocessor, let $U$ be the total utilization of this jobset.
+A sufficient condition for feasible scheduling of this jobset is Equation \ref{eq:eq3}.
+\begin{equation}
+    U = \sum_{i}^{n} \frac{c_i}{p_i} \leq n(2^{\frac{1}{n}} - 1)
+    \label{eq:eq3}
+\end{equation}
 
 \section*{acknowledgements}
 %Note correct LaTeX quotations above. Do not use the " symbol, but rather double ` followed by double '
