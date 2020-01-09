@@ -18,6 +18,14 @@
 \usepackage{amsmath, amsthm}
 \usepackage{graphicx}
 
+% \usepackage{hyperref}
+
+\usepackage{xcolor} % Define custom colours using \textcolor{color}{text}
+\usepackage{float}
+
+% Colour definitions
+\definecolor{darkpink}{rgb}{1.0, 0.13, 0.32}
+
 % This adjusts the underline to be in keeping with word processors.
 \usepackage{soul}
 \setul{.6pt}{.4pt}
@@ -117,7 +125,93 @@ The schedulability tests assume that the jobset will be executed on a uniprocess
 It also assumes that that there is no context-switching time. 
 It also assumes that the execution of the scheduler does not require the processor, that is, the scheduler runs on another specialized processor.
 
-% Keywords are required.
+
+The system has 4 different kind of shared resources $k$. Every shared resource $k$ has a maximum hold time it may be claimed $C_k$.
+These 4 different shared resources with their respective maximum hold time are given in Table \ref{tab:resource_characteristics}.
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        \textcolor{darkpink}{\textit{k}} & \textcolor{darkpink}{\textit{$C_k$}} \\
+        \hline
+
+        1 & 8 \\
+        \hline
+
+        2 & 20 \\
+        \hline
+
+        3 & 10 \\
+        \hline
+
+        4 & 40 \\
+        \hline
+    \end{tabular}
+
+    \label{tab:resource_characteristics}
+    \caption{Characteristics of the available shared resources}
+\end{table}
+This document uses task characteristics letters compatible with the letters defined by Cheng in \.
+Task $T_i$ has a maximum computation time $c_i$, a deadline $d_i$ and a period $p_i$.
+The characteristics of the various real-time tasks in this system can be seen in Table \ref{tab:task_characteristics}.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline 
+        \textcolor{darkpink}{$i$} & \textcolor{darkpink}{\textit{$p_i$}} & \textcolor{darkpink}{\textit{$d_i$}} & \textcolor{darkpink}{\textit{$c_i$}} & \textcolor{darkpink}{Uses shared resource} \\
+        \hline
+
+        1 & 400 & 360 & 90 & R2, R3, R1 \\
+        \hline
+
+        2 & 600 & 580 & 50 & R4 \\
+        \hline
+
+        3 & 800 & 400 & 30 & R1 \\
+        \hline
+
+        4 & 700 & 420 & 40 & R2 \\
+        \hline
+
+        5 & 200 & 170 & 100 & R4, R3 \\
+        \hline
+
+    \end{tabular}
+    
+    \label{tab:task_characteristics}
+    \caption{Characteristics of the different tasks}
+\end{table}
+
+The goal of this document is to prove whether the given real-time tasks in Table \ref{tab:task_characteristics} are Deadline Monotonic schedulable taking into account the shared resources in Table \ref{tab:resource_characteristics}.
+What now follows is the outline for the rest of this document.
+Section \ref{sec:simple_test} uses a couple of simple schedulability tests not taking the shared resources into account.
+
+\newpage
+\section{Simple schedulability tests}
+\label{sec:simple_test}
+
+For the reader who is not familiar with the term schedulability test, a schedulability test is used to validate that a given application can satisfy its specified deadlines when scheduled according to a specific scheduling algorithm \cite{cheng}.
+For the reader who is not familiar with the term schedulabe utilization, the schedulable utilization is the maximum utilization allowed for a set of tasks that will guarantee a feasible scheduling for the task set \cite{cheng}.
+Now we can represent the first schedulability test.
+Give a set of $n$ independent, preemptable and period tasks on a uniprocessor, let $U$ be the total utilization of this task set.
+A necessary and sufficient condition for feasible scheduling of this task set is Equation \ref{eq:eq1}
+
+\begin{equation}
+    U = \sum_{i=1}^{n} \frac{c_i}{p_i} \leq 1
+    \label{eq:eq1}
+\end{equation}
+
+Using Equation \ref{eq:eq1} we can use the task characteristics from Table \ref{tab:task_characteristics} and calculate the utilization. If the calculated utilization is greater than 1 we can conclude that the CPU should do more calculations in a time unit than possible and this jobset is not schedulable.
+Equation \ref{eq:eq2} contains the elaboration.
+
+\begin{equation}
+    U = \sum_{i=1}^{5} \frac{c_i}{p_i} = \frac{90}{400} + \frac{50}{600} + \frac{30}{900} + \frac{40}{700} + \frac{100}{200} \approx 0.90 \Rightarrow 0.90 \leq 1
+    \label{eq:eq2}
+\end{equation}
+
+Since the CPU utilization is less than 1 we can conclude that the jobset may be schedulable.
+
 \section*{acknowledgements}
 %Note correct LaTeX quotations above. Do not use the " symbol, but rather double ` followed by double '
 
@@ -129,6 +223,8 @@ It also assumes that the execution of the scheduler does not require the process
 \bibitem{chapters} Fierke, C. A., and Hammes, G. G. (1996) Transient Kinetic Approaches to Enzyme Mechanisms, in \textit{Contemporary Enzyme Kinetics and Mechanism} (Purich, D., Ed.) 2nd ed., 1--35, Academic Press, New York.
 
 \bibitem{web} Agricultural Research Service, U.S.D.A. National Nutrient Database for Standard Reference, Release 26, \textit{http://ndb.nal.usda.gov/ndb/search/list} (accessed Mar 2014)
+
+\bibitem{cheng} Cheng, A. M. K (2002) Real-Time Systems Scheduling, Analysis and Verification
 \end{thebibliography}
 
 % The About the Student Author section is NOT optional.  Write a paragraph about the student; see previous journal editions for examples.
