@@ -20,7 +20,7 @@
 
 \usepackage{mathtools}
 \DeclarePairedDelimiter\ceil{\lceil}{\rceil}
-\DeclarePairedDelimiter\floor{\lfloor}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
 
 \usepackage{xcolor} % Define custom colours using \textcolor{color}{text}
 \usepackage{float}
@@ -332,6 +332,26 @@ holds for any time instant $t$  chosen as follows:
 \begin{equation}
     t = kp_j, j=1,\dots i,k=1\dots \floor*{\frac{p_i}{p_j}}
 \end{equation}
+
+If $d_i \neq p_i$ we replace $p_i$ by min($d_i$, $p_i$).
+
+For $T_1$, $i = 1, j = 1,\dots i = 1,$ so 
+\begin{equation}
+    k = 1,\dots,\floor*{\frac{d_i}{d_j}} = 1,\dots,\floor*{\frac{170}{170}} = 1
+\end{equation}
+
+Thus, $t = kd_j = 1(170) = 170$.
+Task $T_1$ is is DM schedulable if $c_1 \leq 170$. 
+Since $c_1 = 100 \leq 170$, $T_1$ is DM schedulable. 
+
+For $T_2$, $i = 2, j = 1,\dots i = 1,2,$ so
+\begin{equation}
+    k = 1,\dots,\floor*{\frac{d_i}{d_j}} =1,\dots \floor*{\frac{360}{170}} = 1, 2
+\end{equation}
+
+Thus, $t = 1 d_1 = 1(170) = 170$ or $t = 1 d_2 = 1(360) = 360$ or $t = 2 d_1 = 2(170) = 340$.
+Task $T_2$ is DM schedulable if $c_1 + c_2 \leq 170$ or $3c_1 + 2c_2 \leq 360$ or $2c_1 + c_2 \leq 340$. 
+Since $c_1 = 100, c_2 = 90$
 
 \section*{acknowledgements}
 %Note correct LaTeX quotations above. Do not use the " symbol, but rather double ` followed by double '
