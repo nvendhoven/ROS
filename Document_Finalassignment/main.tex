@@ -18,7 +18,9 @@
 \usepackage{amsmath, amsthm}
 \usepackage{graphicx}
 
-% \usepackage{hyperref}
+\usepackage{mathtools}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rceil}
 
 \usepackage{xcolor} % Define custom colours using \textcolor{color}{text}
 \usepackage{float}
@@ -231,16 +233,105 @@ This means that this test can not ensure that the jobset is schedulable, but it 
     \label{eq:eq4}
 \end{equation}
 
-\section{Schedulability test without taking shared resources}
+\section{Schedulability test without taking shared resources into account}
 
 This section will present the reader a shedulability test which can guarantee whether the jobset is Deadline Monotonic schedulable or not.
 It does not take the shared resources into account.
 The reader may wonder why we dedicate a section about proving whether the jobset is Deadline Monotonic schedulable without taking the shared resources into account.
 If this section proves that the jobset is not Deadline Monotonic schedulable without taking the shared resources into account then the jobset will not be Deadline Monotonic schedulable taking the shared resources into account.
-The prove whether the jobset is Deadline Monotonic which will be presented in the next section is an extension on the schedulability test presented in this section.
+The prove whether the jobset is Deadline Monotonic which will be presented in the next section and is an extension on the schedulability test presented in this section.
+\newpage
+
+Suppose we have three tasks $T_1$, $T_2$ and $T_3$. Task $T_1$ has the smallest deadline followed by $T_2$, and then $T_3$.
+It is intuitive to see that in order to schedule $T_1$ its computation time must be less than or equal to its period.
+Therefore the following necessary and sufficient condition must hold in Equation \ref{eq:eq5}.
+
+\begin{equation}
+    c_1 \leq p_1 
+    \label{eq:eq5}
+\end{equation}
+
+For $T_2$ to be feasible scheduled we need to find enough available time in the period $[0, p_2]$ that is not used by $T_1$.
+Imagine $T_2$ is finished executing at time $t$ then the total number of iterations of $T_1$ is
+
+\begin{equation}
+    \ceil*{\frac{t}{p_1}}
+\end{equation}
+
+To ensure that $T_2$ can complete execution at time $t$ we must ensure that every iteration of $T_1$ in $[0, t]$ must be completed and there should still be enough time for $T_2$ to execute.
+The available time for $T_2$ is
+
+\begin{equation}
+    t = \ceil*{\frac{t}{p_1}}c_1 + c_2
+\end{equation}
+
+And similiar for $T_3$ to be feasible scheduled there must be enough time available after scheduling $T_1$ and $T_2$
+
+\begin{equation}
+    t = \ceil*{\frac{t}{p_1}}c_1 + \ceil*{\frac{t}{p_2}}c_2 + c_3
+\end{equation}
+
+The only thing we need to consider is how to determine if such $t$ exists such that the jobset can be feasible scheduled.
+There are an infinite number of datapoints in the time interval if no discrete time is assumed. 
+However, the value of the ceiling $\ceil*{\frac{t}{p_1}}$ only changes at multiples of $p_1$ with an increase of $c_1$.
+Thus we only need to show that a $k$ exists such that
+
+\begin{equation}
+    k p_1 \geq k c_1 + c_2 \text{ and } k p_1 \leq k p_2 
+\end{equation}
+
+Therefore, we need to check that
+\begin{equation}
+    t \geq \ceil*{\frac{t}{p_1}}c_1 + c_2
+\end{equation}
+
+We will use the equations just derived on the jobset of Table \ref{tab:task_characteristics_new}.
+This is the same jobset we introduced in Table \ref{tab:task_characters}, but is now arranged in order of priority.
+$T_1$ has now the highest priority because its deadline is the shortest compared to the other tasks followed by $T_2$ and so on.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline 
+        \textcolor{darkpink}{$i$} & \textcolor{darkpink}{\textit{$p_i$}} & \textcolor{darkpink}{\textit{$d_i$}} & \textcolor{darkpink}{\textit{$c_i$}} & \textcolor{darkpink}{Uses shared resource} \\
+        \hline
+
+        1 & 200 & 170 & 100 & R4, R3 \\
+        \hline
+
+        2 & 400 & 360 & 90 & R2, R3, R1 \\
+        \hline
+
+        3 & 800 & 400 & 30 & R1 \\
+        \hline
+
+        4 & 700 & 420 & 40 & R2 \\
+        \hline
+
+        5 & 600 & 580 & 50 & R4 \\
+        \hline
+        
+    \end{tabular}
+    
+    \caption{Characteristics of the different tasks rearranged in order of priority}
+    \label{tab:task_characteristics_new}
+\end{table}
 
 
+Let
+\begin{equation}
+    w_i(t) = \sum_{k=1}^{i} C_k \ceil*{\frac{t}{p_k}}, 0 < t \leq p_i.
+\end{equation}
 
+The following inequality 
+\begin{equation}
+    w_i(t) \leq t
+\end{equation}
+
+holds for any time instant $t$  chosen as follows:
+\begin{equation}
+    t = kp_j, j=1,\dots i,k=1\dots \floor*{\frac{p_i}{p_j}}
+\end{equation}
 
 \section*{acknowledgements}
 %Note correct LaTeX quotations above. Do not use the " symbol, but rather double ` followed by double '
@@ -249,12 +340,12 @@ The prove whether the jobset is Deadline Monotonic which will be presented in th
 
 \bibitem{journal} Marquez, V., Frohlich, T., Armache, J. P., Sohmen, D., Donhofer, A., Mikolajka, A., Berninghausen, O., Thomm, M., Beckmann, R., Arnold, G. J., and Wilson, D. N. (2011) Proteomic characterization of archaeal ribosomes reveals the presence of novel archaeal-specific ribosomal proteins, \textit{J Mol Biol} 405, 1215--1232. \textit {https://doi.org/10.33697/ajur.2019.003}
 
-
 \bibitem{chapters} Fierke, C. A., and Hammes, G. G. (1996) Transient Kinetic Approaches to Enzyme Mechanisms, in \textit{Contemporary Enzyme Kinetics and Mechanism} (Purich, D., Ed.) 2nd ed., 1--35, Academic Press, New York.
 
 \bibitem{web} Agricultural Research Service, U.S.D.A. National Nutrient Database for Standard Reference, Release 26, \textit{http://ndb.nal.usda.gov/ndb/search/list} (accessed Mar 2014)
 
 \bibitem{cheng} Cheng, A. M. K (2002) Real-Time Systems Scheduling, Analysis and Verification
+
 \end{thebibliography}
 
 % The About the Student Author section is NOT optional.  Write a paragraph about the student; see previous journal editions for examples.
