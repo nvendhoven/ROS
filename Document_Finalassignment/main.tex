@@ -106,7 +106,7 @@
 \author{
 Youri Klaassens$^{a}$, Nick van Endhoven$^{b}$ \\ \medskip 
 $^{a}$student Computer Engineering Rotterdam University of Applied Science, 0996211@hr.nl, Zwaag \\ 
-$^{b}$student Computer Engineering Rotterdam University of Applied Science, 1234567@hr.nl, Breda\\ \medskip 
+$^{b}$student Computer Engineering Rotterdam University of Applied Science, 0998831@hr.nl, Breda\\ \medskip 
 }
 
 \pagestyle{empty}
@@ -333,25 +333,45 @@ holds for any time instant $t$  chosen as follows:
     t = kp_j, j=1,\dots i,k=1\dots \floor*{\frac{p_i}{p_j}}
 \end{equation}
 
-If $d_i \neq p_i$ we replace $p_i$ by min($d_i$, $p_i$).
-
 For $T_1$, $i = 1, j = 1,\dots i = 1,$ so 
 \begin{equation}
-    k = 1,\dots,\floor*{\frac{d_i}{d_j}} = 1,\dots,\floor*{\frac{170}{170}} = 1
+    k = 1,\dots,\floor*{\frac{p_i}{p_j}} = 1,\dots,\floor*{\frac{200}{200}} = 1
 \end{equation}
 
-Thus, $t = kd_j = 1(170) = 170$.
+Thus, $t = kp_j = 1(200) = 200$.
 Task $T_1$ is is DM schedulable if $c_1 \leq 170$. 
-Since $c_1 = 100 \leq 170$, $T_1$ is DM schedulable. 
+Since $c_1 = 100 \leq 200$, $T_1$ is DM schedulable. 
 
 For $T_2$, $i = 2, j = 1,\dots i = 1,2,$ so
 \begin{equation}
-    k = 1,\dots,\floor*{\frac{d_i}{d_j}} =1,\dots \floor*{\frac{360}{170}} = 1, 2
+    k = 1,\dots,\floor*{\frac{p_i}{p_j}} = 1,\dots \floor*{\frac{400}{200}} = 1, 2
 \end{equation}
 
-Thus, $t = 1 d_1 = 1(170) = 170$ or $t = 1 d_2 = 1(360) = 360$ or $t = 2 d_1 = 2(170) = 340$.
-Task $T_2$ is DM schedulable if $c_1 + c_2 \leq 170$ or $3c_1 + 2c_2 \leq 360$ or $2c_1 + c_2 \leq 340$. 
-Since $c_1 = 100, c_2 = 90$
+Thus, $t = 1 p_1 = 1(200) = 200$ or $t = 1 p_2 = 1(400) = 400$ or $t = 2 p_1 = 2(200) = 400$.
+Task $T_2$ is DM schedulable if $c_1 + c_2 \leq 200$ or $2c_1 + c_2 \leq 400$. 
+Since $c_1 = 100, c_2 = 90$, $2(100) + 90 \leq 400$, thus $T_2$ is DM schedulable together with $T_1$.
+
+For $T_3$, $i = 3, j = 1,\dots i = 1,2,3,$ so
+\begin{equation}
+    k = 1,\dots,\floor*{\frac{p_i}{p_j}} = 1,\dots \floor*{\frac{800}{200}} = 1, 2, 3, 4
+\end{equation}
+
+Thus, $t = 1 p_1 = 1(200) = 200$ or $t = 1 d_2 = 1(400) = 400$ or $t = 2 d_1 = 2(200) = 400$ or $t = 1 d_3 = 1(800) = 800$ or $t = 3 d_1 = 3(200) = 600$ or $t = 4 d_1 = 4(200) = 800$.
+Task $T_3$ is DM schedulable if $c_1 + c_2 + c_3 \leq 200$ or $2c_1 + c_2 + c_3 \leq 400$ or $4c_1 + 2c_2 + c_3 \leq 800$ or $3c_1 + 2c_2 + c_3 \leq 600$. 
+Since $c_1 = 100, c_2 = 90, c_3 = 30$, $2(100) + 90 + 30 \leq 400$, thus $T_3$ is DM schedulable together with $T_1$ and $T_2$.
+
+For $T_4$, $i = 4, j = 1,\dots i = 1,2,3,4,$ so
+\begin{equation}
+    k = 1,\dots,\floor*{\frac{p_i}{p_j}} = 1,\dots \floor*{\frac{700}{200}} = 1, 2, 3
+\end{equation}
+
+Thus, $t = 1 p_1 = 1(200) = 200$ or $t = 1 d_2 = 1(400) = 400$ or $t = 2 d_1 = 2(200) = 400$ or $t = 1 d_3 = 1(800) = 800$ or $t = 3 d_1 = 3(200) = 600$ or $t = 1 d_4 = 1(700) = 700$.
+Task $T_4$ is DM schedulable if $c_1 + c_2 + c_3 + c_4 \leq 200$ or $2c_1 + c_2 + c_3 + c_4 \leq 400$ or $4c_1 + 2c_2 + c_3 + c_4 \leq 800$ or $3c_1 + 2c_2 + c_3 + c_4 \leq 600$ or $4c_1 + 2c_2 + c_3 + c_4 \leq 700$.
+Since $c_1 = 100, c_2 = 90, c_3 = 30, c_4 = 40$, $4(100) + 2(180) + 30 + 40 \leq 700$, thus $T_4$ is DM schedulable together with $T_1$ and $T_2$ and $T_3$.
+
+\newpage
+
+
 
 \section*{acknowledgements}
 %Note correct LaTeX quotations above. Do not use the " symbol, but rather double ` followed by double '
