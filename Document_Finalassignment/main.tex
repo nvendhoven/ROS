@@ -379,6 +379,53 @@ Thus, $t = 1 p_1 = 1(200) = 200$ or $t = 1 d_2 = 1(400) = 400$ or $t = 2 d_1 = 2
 Task $T_5$ is DM schedulable if $c_1 + c_2 + c_3 + c_4 + c_5 \leq 200$ or $2c_1 + c_2 + c_3 + c_4 + c_5 \leq 400$ or $4c_1 + 2c_2 + c_3 + 2c_4 + 2c_5 \leq 800$ or $3c_1 + 2c_2 + c_3 + c_4 + c_5 \leq 600$ or $4c_1 + 2c_2 + c_3 + c_4 + 2c_5 \leq 700$.
 Since $c_1 = 100, c_2 = 90, c_3 = 30, c_4 = 40, c_5 = 50$, $4(100) + 2(90) + 30 + 2(40) + 2(50) \leq 800$, thus $T_5$ is DM schedulable together with $T_1$ and $T_2$ and $T_3$ and $T_4$.
 
+
+The above calculations show that the jobset is DM schedulable. 
+However, there is a snag.
+This is true if $d_i = p_i$ holds.
+Table \ref{tab:task_characteristics_new} shows that all tasks have a deadline less than their period.
+The calculations above did not take the deadline less than the period into account.
+
+\section{Schedulability test where $d_i \neq p_i$ and which does not take shared resources into account}
+
+A response time analysis can tell the response time for an individual task.
+Comparing the response time for an individual task to its deadline (Table \ref{tab:task_characteristics_new}) gives the definitive answer whether the jobset is DM schedulable without taking the shared resources into account.
+If the test in this section shows that the jobset is not DM schedulable then the jobset is not DM schedulable taking the shared resources into account.
+Let 
+
+\begin{equation}
+    R_i = C_i + \sum_{j \in hp(i)}^{} \ceil*{\frac{R_i}{T_j}}C_j.
+\end{equation}
+
+The equation above deserves some explanation.
+The response time for the highest priority task is $R = C$.
+The response time for any other task that has not the highest priority is $R_i = C_i + I_i$ where $I$ is the interference from caused by all the higher priority tasks.
+The interference can be calculated using $\ceil*{\frac{R_i}{T_j}}C_j$.
+
+$R_1 = C_1 = 100$.
+
+For $T_2$, $i=2, j=1\dots (i-1) = 1$, so
+\begin{equation}
+    R_2 = 90 + (\ceil*{\frac{90}{200}} * 100) = 90 + (1 * 100) = 190
+\end{equation}
+\begin{equation}
+    R_2 = 90 + (\ceil*{\frac{190}{200}} * 100) = 90 + (1 * 100) = 190
+\end{equation}
+Thus $R_2 = 190$.
+
+For $T_3$, $i=3, j=1\dots (i-1) = 1,2$, so
+\begin{equation}
+    R_3 = 30 + (\ceil*{\frac{190}{400}} * 90 + \ceil*{\frac{190}{200}} * 100) = 30 + (1 * 90) + (1 * 100) = 220 
+\end{equation}
+\begin{equation}
+    R_3 = 30 + (\ceil*{\frac{220}{400}} * 90 + \ceil*{\frac{220}{200}} * 100) = 30 + (1 * 90) + (2 * 100) = 320 
+\end{equation}
+\begin{equation}
+    R_3 = 30 + (\ceil*{\frac{320}{400}} * 90 + \ceil*{\frac{320}{200}} * 100) = 30 + (1 * 90) + (2 * 100) = 320 
+\end{equation}
+
+Thus $R_3 = 320$
+
 \section*{acknowledgements}
 %Note correct LaTeX quotations above. Do not use the " symbol, but rather double ` followed by double '
 
