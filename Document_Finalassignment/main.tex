@@ -423,8 +423,47 @@ For $T_3$, $i=3, j=1\dots (i-1) = 1,2$, so
 \begin{equation}
     R_3 = 30 + (\ceil*{\frac{320}{400}} * 90 + \ceil*{\frac{320}{200}} * 100) = 30 + (1 * 90) + (2 * 100) = 320 
 \end{equation}
-
 Thus $R_3 = 320$
+\newpage
+
+For $T_4$, $i=4, j=1\dots (i-1) = 1,2,3$, so
+\begin{multline}
+    R_4 = 40 + (\ceil*{\frac{320}{800}} * 30 + \ceil*{\frac{320}{400}} * 90 + \ceil*{\frac{320}{200}} * 100) = 40 + (1 * 30) + (1 * 90) + (2 * 100) \\ = 40 + 30 + 90 + 200 = 360 
+\end{multline}
+\begin{multline}
+    R_4 = 40 + (\ceil*{\frac{360}{800}} * 30 + \ceil*{\frac{360}{400}} * 90 + \ceil*{\frac{360}{200}} * 100) = 40 + (1 * 30) + (1 * 90) + (2 * 100) \\ = 40 + 30 + 90 + 200 = 360 
+\end{multline}
+Thus $R_4 = 360$
+
+For $T_5$, $i=5, j=1\dots (i-1) = 1,2,3,4$, so
+\begin{multline}
+R_5 = 50 + (\ceil*{\frac{360}{700}} * 40 + \ceil*{\frac{360}{800}} * 30 + \ceil*{\frac{360}{400}} * 90 + \ceil*{\frac{360}{200}} * 100) = 50 + (1 * 40) + (1 * 30) + (1 * 90) + (2 * 100) \\ = 50 + 40 + 30 + 90 + 200 = 410
+\end{multline}
+
+\begin{multline}
+R_5 = 50 + (\ceil*{\frac{410}{700}} * 40 + \ceil*{\frac{410}{800}} * 30 + \ceil*{\frac{410}{400}} * 90 + \ceil*{\frac{410}{200}} * 100) = 50 + (1 * 40) + (1 * 30) + (2 * 90) + (3 * 100) \\ = 50 + 40 + 30 + 180 + 300 = 600
+\end{multline}
+
+\begin{multline}
+R_5 = 50 + (\ceil*{\frac{600}{700}} * 40 + \ceil*{\frac{600}{800}} * 30 + \ceil*{\frac{600}{400}} * 90 + \ceil*{\frac{600}{200}} * 100) = 50 + (1 * 40) + (1 * 30) + (2 * 90) + (3 * 100) \\ = 50 + 40 + 30 + 180 + 300 = 600
+\end{multline}
+Thus $R_5 = 600$
+
+Now that all response times are known we can verify whether $R_i \leq d_i$ holds for $ 1 \leq i \leq 5$.\\
+$R_1 = 100, d_1 = 170, 100 \leq 170 \implies \text{ true }$ \\
+$R_2 = 190, d_2 = 360, 190 \leq 360 \implies \text{ true }$ \\
+$R_3 = 320, d_3 = 400, 320 \leq 400 \implies \text{ true }$ \\
+$R_4 = 360, d_4 = 420, 360 \leq 420 \implies \text{ true }$ \\
+$R_5 = 600, d_5 = 580, 600 \leq 580 \implies \text{ false }$ \\
+The jobset is not DM schedulable. If $d_5 = p_5$ the jobset would be DM schedulable. 
+If the jobset did not include $T_5$ it would be DM schedulable aswell.
+However, for the sake of completeness we will do calculations which takes the shared resources into account.
+If no calculation errors are made the conclusion should be the same as this one.
+
+\newpage
+
+\section{Schedulability test where $d_i \neq p_i$ and which does take shared resources into account}
+
 
 \section*{acknowledgements}
 %Note correct LaTeX quotations above. Do not use the " symbol, but rather double ` followed by double '
