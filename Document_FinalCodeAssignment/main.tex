@@ -147,9 +147,9 @@ $^{b}$student Computer Engineering Rotterdam University of Applied Science, 0998
 % Introduction.
 \section*{introduction}
 
-This assignment considers a small part of a car; the airbag and blackbox system. The goal is to model
-tasks so that all tasks reach their deadlines. The working platform is TI-RTOS. A second LaunchPad delivers the tasks to the main LaunchPad using 
-GPIO pins. The tasks get executed and sent a signal back to the second LaunchPad. This second LaunchPad will then validate if the tasks are executed within their deadline.
+This assignment considers a small part of a car. Those are the airbag and a blackbox system. The goal is to model
+tasks such that all tasks finish their execution before their given deadlines. The working platform is TI-RTOS. A second LaunchPad fires tasks to the main LaunchPad using 
+GPIO pins. The tasks get executed and send a signal back to the second LaunchPad. This second LaunchPad will then validate if the tasks are finished executing before their given deadline.
 The tasks and deadlines are defined in table \ref{tab:tasks}.
 
 \begin{table}[H]
@@ -170,7 +170,7 @@ The tasks and deadlines are defined in table \ref{tab:tasks}.
     \label{tab:tasks}
 \end{table}
 
-Table \ref{tab:pins} shows the pin mapping.
+Table \ref{tab:pins} shows the pin mapping between two LaunchPads.
 
 \begin{table}[H]
     \centering
@@ -196,10 +196,8 @@ Table \ref{tab:pins} shows the pin mapping.
     \label{tab:pins}
 \end{table}
 
-Both the \textit{compass} and \textit{GPS} tasks requires communication via a shared UART connection using 9600 baud 8N1 on UART0. The \textit{compass} task, on execution, has to print 32 bytes of ASCII data containing a counter
-that increments every time the task is executed. The \textit{GPS} is required to do the same, but instead of 32 bytes it has to print 64 bytes of ASCII data.
-
-\newpage
+Both the \textit{compass} and \textit{GPS} tasks communicates via a shared UART resource using 9600 baud 8N1. This is the UART0 peripheral in the LaunchPad. The \textit{compass} task has to print 32 bytes of ASCII data containing a counter
+that increments every time the task is executed. The \textit{GPS} task has to print the same as the \textit{compass} task except it has to print 64 bytes instead of the 32 bytes.\newpage
 \section*{Implementation}
 
 After the device is booted an initialization process is started. The UART and GPIO parameters are initialized and configured.
