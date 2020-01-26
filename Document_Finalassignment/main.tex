@@ -194,7 +194,7 @@ Section \ref{sec:simple_test} uses a couple of simple schedulability tests not t
 \label{sec:simple_test}
 
 For the reader who is not familiar with the term schedulability test, a schedulability test is used to validate that a given application can satisfy its specified deadlines when scheduled according to a specific scheduling algorithm \cite{cheng}.
-For the reader who is not familiar with the term schedulabe utilization, the schedulable utilization is the maximum utilization allowed for a set of tasks that will guarantee a feasible scheduling for the jobset \cite{cheng}.
+For the reader who is not familiar with the term schedulabe utilization, the schedulable utilization is the maximum utilization allowed for a set of tasks that will guarantee a feasible scheduling for the jobset \cite{cheng} \cite{ucosii}.
 Now we can represent the first schedulability test.
 Given a set of $n$ independent, preemptable and period tasks on a uniprocessor, let $U$ be the total utilization of this task set.
 A necessary and sufficient condition for feasible scheduling of this jobset is Equation \ref{eq:eq1}
@@ -213,7 +213,7 @@ Equation \ref{eq:eq2} contains the elaboration.
 \end{equation}
 
 Since the CPU utilization is less than 1 we can conclude that the jobset may be schedulable.
-We can use the schedulability test in Equation \ref{eq:eq3} to test if the jobset can be guaranteed scheduled.
+We can use the schedulability test in Equation \ref{eq:eq3} to test if the jobset can be guaranteed scheduled \cite{ucosii} \cite{rtos}.
 If this test fails it does not men that the jobset is not schedulable.
 Given a set of $n$ independent, preemtable and period tasks on a uniprocessor, let $U$ be the total utilization of this jobset.
 A sufficient condition for feasible scheduling of this jobset is Equation \ref{eq:eq3}.
@@ -569,26 +569,17 @@ Taking the shared resources into account this jobset is only DM schedulable if $
 
 \section*{acknowledgements}
 %Note correct LaTeX quotations above. Do not use the " symbol, but rather double ` followed by double '
+We would like to thank Harry Broeders for his lectures about calculating the response time of a given jobset.
 
 \begin{thebibliography}{9} %If you have more than 9 sources listed, replace this "9" with "99".
 
-\bibitem{journal} Marquez, V., Frohlich, T., Armache, J. P., Sohmen, D., Donhofer, A., Mikolajka, A., Berninghausen, O., Thomm, M., Beckmann, R., Arnold, G. J., and Wilson, D. N. (2011) Proteomic characterization of archaeal ribosomes reveals the presence of novel archaeal-specific ribosomal proteins, \textit{J Mol Biol} 405, 1215--1232. \textit {https://doi.org/10.33697/ajur.2019.003}
+\bibitem{cheng} Cheng, A. M. K (2002) Real-Time Systems Scheduling, Analysis and Verification, Wiley-Interscience, ISBN-13: 978-0471184065
 
-\bibitem{chapters} Fierke, C. A., and Hammes, G. G. (1996) Transient Kinetic Approaches to Enzyme Mechanisms, in \textit{Contemporary Enzyme Kinetics and Mechanism} (Purich, D., Ed.) 2nd ed., 1--35, Academic Press, New York.
+\bibitem{ucosii} Labrosse, J, J (2002) MicroC/OS-II The Real-Time Kernel, Taylor \& Francis Ltd, ISBN: 1-57820-103-9
 
-\bibitem{web} Agricultural Research Service, U.S.D.A. National Nutrient Database for Standard Reference, Release 26, \textit{http://ndb.nal.usda.gov/ndb/search/list} (accessed Mar 2014)
-
-\bibitem{cheng} Cheng, A. M. K (2002) Real-Time Systems Scheduling, Analysis and Verification
+\bibitem{rtos} Cooling, J (2019) Real-Time Operating Systems - The Theory, Lindentree Associates, ISBN-13: 978-1795340656
 
 \end{thebibliography}
-
-% The About the Student Author section is NOT optional.  Write a paragraph about the student; see previous journal editions for examples.
-% If there is more than one student author, you must move the comment below.
-\section*{about the student author}
-%\section*{about the student authors}
-Youri Klaassens is a final year bachelor student at Inholland University of Applied Science studying Computer Engineering.
-
-Nick van Endhoven is a final year bachelor student at Avans University of Applied Science studying Computer Engineering.
 
 % The Press Summary section is NOT optional.  Write a paragraph describing the paper in a manner suitable for the press; see previous journal editions for examples.
 \section{Summary}
