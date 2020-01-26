@@ -19,6 +19,7 @@
 \usepackage{amsmath, amsthm}
 \usepackage{graphicx}
 
+\usepackage{listings}
 \usepackage{mathtools}
 \DeclarePairedDelimiter\ceil{\lceil}{\rceil}
 \DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
@@ -92,7 +93,32 @@
 \bibpunct{}{}{,~}{s}{,}{,}
 \setlength{\bibsep}{0pt plus 0.3ex}
 
+\definecolor{mGreen}{rgb}{0,0.6,0}
+\definecolor{mGray}{rgb}{0.5,0.5,0.5}
+\definecolor{mPurple}{rgb}{0.58,0,0.82}
+\definecolor{backgroundColour}{rgb}{0.95,0.95,0.92}
 
+\setlength{\parindent}{0pt}
+
+\lstdefinestyle{CStyle}{
+    backgroundcolor=\color{backgroundColour},   
+    commentstyle=\color{mGreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{mGray},
+    stringstyle=\color{mPurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=C
+}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -171,12 +197,127 @@ Table \ref{tab:pins} shows the pin mapping.
 \end{table}
 
 Both the \textit{compass} and \textit{GPS} tasks requires communication via a shared UART connection using 9600 baud 8N1 on UART0. The \textit{compass} task, on execution, has to print 32 bytes of ASCII data containing a counter
-that increments everytime the task is executeted. The \textit{GPS} is required to do the same, but instead of 32 bytes it has to print 64 bytes of ASCII data.
+that increments every time the task is executed. The \textit{GPS} is required to do the same, but instead of 32 bytes it has to print 64 bytes of ASCII data.
 
 \newpage
 \section*{Implementation}
 
+After the device is booted an initialization process is started. The UART and GPIO parameters are initialized and configured.
+A main thread is created that summons different threads for each task with a given priority. Each of these
+tasks are configured shown in listing \ref{lst:init}.
 
+\begin{lstlisting}[style=CStyle, caption={Initialization}, captionpos=b, label={lst:init}, escapechar=@]
+void* main_thread(void* args)
+{
+    struct sched_param  spc1, spc2, spc3;
+    pthread_attr_t      pta_prio_1, pta_prio_2, pta_prio_3;
+    pthread_t           ptc_c, ptc_a, ptc_g;
+
+    check_errno( sem_init(&int_sem_compass, 0, 0) );
+    check(pthread_attr_init(&pta_prio_1));
+    check(pthread_attr_setstacksize(&pta_prio_1, 1024));
+    check(pthread_attr_getschedparam(&pta_prio_1, &spc1));
+    spc1.sched_priority = 1;
+    check(pthread_attr_setschedparam(&pta_prio_1, &spc1));
+    check(pthread_create(&ptc_c, &pta_prio_2, &compass_task, NULL));
+    check_errno(pthread_join(ptc_c, NULL));
+    check_errno( sem_destroy(&int_sem_compass) );
+	
+	...
+
+    return NULL;
+}
+
+\end{lstlisting}
+
+Each input GPIO pin gets its own callback function that will be executed on an interrupt. These interrupt are
+enabled in the main before the main thread is created. Listing \ref{lst:events} shows these callback functions.
+A semaphore is posted, respective to their task, when one of these events triggers. This allows the tasks
+running in a different thread to continue execution. The way this implemented is shown in listing \ref{lst:tasks}.
+
+\begin{lstlisting}[style=CStyle, caption={Interrupt callbacks}, captionpos=b, label={lst:events}, escapechar=@]
+/* ISR for GPIO 06 */
+void on_compass_event(uint_least8_t index)
+{
+    sem_post(&int_sem_compass);
+}
+
+/* ISR for GPIO 07 */
+void on_airbag_event(uint_least8_t index)
+{
+    sem_post(&int_sem_airbag);
+}
+
+/* ISR for GPIO 08 */
+void on_gps_event(uint_least8_t index)
+{
+    sem_post(&int_sem_gps);
+}
+\end{lstlisting}
+
+In listing \ref{lst:tasks} also shows the implementation of the \textit{compass} task. When executed it writes a 32 byte ASCII
+message using UART on baud 9600. This messages contains a counter, increased each execution, and fills the rest of the message with the character 'C'.
+The \textit{GPS} tasks does the same thing but it writes a 64 byte message instead with the character 'G'. The function \texttt{write\_to\_uart} is shown in listing \ref{lst:uart}.
+The \textit{airbag} task only has to wait for 30 ms before sending a signal bag.
+
+\begin{lstlisting}[style=CStyle, caption={Tasks implementation}, captionpos=b, label={lst:tasks}, escapechar=@]
+/* Task for compass */
+void* compass_task(void* args)
+{
+    static int count = 0;
+
+    while(1)
+    {
+        sem_wait(&int_sem_compass);
+
+        write_to_uart(count, 'C', 32);
+
+        count += 1;
+
+        GPIO_write(Board_GPIO_11, 1);
+        Task_sleep(1);
+        GPIO_write(Board_GPIO_11, 0);
+    }
+
+    return NULL;
+}
+\end{lstlisting}
+
+Since the UART resource has to be shared among two different threads a mutex lock is implemented. Each time a mutex will lock
+the \texttt{UART\_write} function, preventing other threads from using it. This function is configured to be blocking, thus
+only continuing after it finishes the writing process. After the function is fully executed
+it will unlock again making it available for other threads to use. This is also shown in listing \ref{lst:uart}
+
+\begin{lstlisting}[style=CStyle, caption={Write to UART implementation}, captionpos=b, label={lst:uart}, escapechar=@]
+void write_to_uart(int cnt, char c, size_t size)
+{
+    char str[size];
+    sprintf(str, "%d", cnt);
+
+    int cnt_size = 0;
+    int i = cnt;
+
+    if(cnt == 0)
+        cnt_size = 1;
+
+    while(i != 0)
+    {
+        i /= 10;
+        cnt_size += 1;
+    }
+
+    for(;cnt_size < size - 2; cnt_size++)
+        str[cnt_size] = c;
+
+    str[size - 3] = '\n';
+    str[size - 2] = '\r';
+    str[size - 1] = '\0';
+
+    check_errno(pthread_mutex_lock(&uart_lock));
+    UART_write(handle, str, size);
+    check_errno(pthread_mutex_unlock(&uart_lock));
+}
+\end{lstlisting}
 
 \newpage
 
