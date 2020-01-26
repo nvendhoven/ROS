@@ -558,9 +558,14 @@ R_5 = 50 + 0 + (\ceil*{\frac{490}{700}} * 40 + \ceil*{\frac{490}{800}} * 30 + \c
 \end{multline}
 Thus $R_5 = 600$
 
-
-
-
+Now that all response times are known we can verify whether $R_i \leq d_i$ holds for $1 \leq i \leq 5$.\\
+$R_1 = 150, d_1 = 170, 150 \leq 170 \implies \text{ true }$ \\
+$R_2 = 358, d_2 = 360, 358 \leq 360 \implies \text{ true }$ \\
+$R_3 = 380, d_3 = 400, 380 \leq 400 \implies \text{ true }$ \\
+$R_4 = 490, d_4 = 420, 490 \leq 420 \implies \text{ false}$ \\
+$R_5 = 600, d_5 = 580, 600 \leq 580 \implies \text{ false}$ \\
+Without taking the shared resources into account the jobset is DM schedulable if $T_5$ was not included.
+Taking the shared resources into account this jobset is only DM schedulable if $T_5$ and $T_4$ are not included.
 
 \section*{acknowledgements}
 %Note correct LaTeX quotations above. Do not use the " symbol, but rather double ` followed by double '
