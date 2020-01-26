@@ -519,6 +519,29 @@ and calculates the total block time by adding the maximum hold time of each reso
     \label{tab:task_resources}
 \end{table}
 
+$R_1 = C_1 + B_1 = 100 + 50 = 150$.
+
+For $T_2$, $i=2, j=1\dots (i-1) = 1$, so
+\begin{equation}
+    R_2 = 90 + 68 + (\ceil*{\frac{150}{200}} * 100) = 90 + 68 + (1 * 100) = 258
+\end{equation}
+\begin{equation}
+    R_2 = 90 + 68 + (\ceil*{\frac{258}{200}} * 100) = 90 + 68 + (2 * 100) = 358
+\end{equation}
+\begin{equation}
+    R_2 = 90 + 68 + (\ceil*{\frac{358}{200}} * 100) = 90 + 68 + (2 * 100) = 358
+\end{equation}
+Thus $R_2 = 358$.
+
+\newpage
+For $T_3$, $i=3, j=1\dots (i-1) = 1,2$, so
+\begin{equation}
+    R_3 = 30 + 60 + (\ceil*{\frac{358}{400}} * 90 + \ceil*{\frac{358}{200}} * 100) = 30 + 60 + (1 * 90) + (2 * 100) = 380 
+\end{equation}
+\begin{equation}
+    R_3 = 30 + 60 + (\ceil*{\frac{380}{400}} * 90 + \ceil*{\frac{380}{200}} * 100) = 30 + 60 + (1 * 90) + (2 * 100) = 380 
+\end{equation}
+Thus $R_3 = 380$
 
 \section*{acknowledgements}
 %Note correct LaTeX quotations above. Do not use the " symbol, but rather double ` followed by double '
