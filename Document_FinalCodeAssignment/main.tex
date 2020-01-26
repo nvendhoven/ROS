@@ -121,6 +121,11 @@ $^{b}$student Computer Engineering Rotterdam University of Applied Science, 0998
 % Introduction.
 \section*{introduction}
 
+This assignment considers a small part of a car; the airbag and blackbox system. The goal is to model
+tasks so that all tasks reach their deadlines. The working platform is TI-RTOS. A second LaunchPad delivers the tasks to the main LaunchPad using 
+GPIO pins. The tasks get executed and sent a signal back to the second LaunchPad. This second LaunchPad will then validate if the tasks are executed within their deadline.
+The tasks and deadlines are defined in table \ref{tab:tasks}.
+
 \begin{table}[H]
     \centering
     \begin{tabular}{|l|c|c|c|}
@@ -135,11 +140,44 @@ $^{b}$student Computer Engineering Rotterdam University of Applied Science, 0998
         \hline
     \end{tabular}
 
-    \caption{Characteristics of the available shared resources. }
-    \label{tab:resource_characteristics}
+    \caption{Characteristics of the tasks. }
+    \label{tab:tasks}
 \end{table}
 
+Table \ref{tab:pins} shows the pin mapping.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|c|}
+        \hline
+        \textcolor{darkpink}{\textit{Description}}& \textcolor{darkpink}{\textit{Pin}} & \textcolor{darkpink}{\textit{GPIO}} &  \textcolor{darkpink}{\textit{IN/OUT}} \\
+        \hline
+        \textbf{Compass event} & 61 & 6 &  IN  \\
+        \hline
+        \textbf{Airbag event} & 62 &  7 &  IN  \\
+        \hline
+        \textbf{GPS event} & 63 & 8 &  IN  \\
+        \hline
+        \textbf{GPS response} & 64 & 9 &  OUT  \\
+        \hline
+        \textbf{Airbag response} & 1 & 10 &  OUT  \\
+        \hline
+        \textbf{Compass response} & 2 & 11 &  OUT  \\
+        \hline
+    \end{tabular}
+
+    \caption{Pin mapping.}
+    \label{tab:pins}
+\end{table}
+
+Both the \textit{compass} and \textit{GPS} tasks requires communication via a shared UART connection using 9600 baud 8N1 on UART0. The \textit{compass} task, on execution, has to print 32 bytes of ASCII data containing a counter
+that increments everytime the task is executeted. The \textit{GPS} is required to do the same, but instead of 32 bytes it has to print 64 bytes of ASCII data.
+
+\newpage
 \section*{Implementation}
+
+
+
 \newpage
 
 \section*{Results}
