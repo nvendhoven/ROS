@@ -470,13 +470,14 @@ If $B$ is the maximum amount of time a task could block on shared resources and 
 
 \begin{equation}
     B_i = \sum_{k = 1}^{K} usage(k,i) C_k.
+    \label{eq:blocked_time}
 \end{equation}
 
 Let $res(a)$ be a collection of used shared resources of Task $T_a$. Let $P_i$ be the priority of $T_i$ (where $P_i = \frac{1}{d_i}$). $usage(k,i)$ is a piecewise function defined as 
 \[
     usage(k,i) = 
     \begin{dcases}
-        1 \;  P_j < P_i, P_h \geq P_i, k \in res(j), k \in res(h) \\
+        1 \;  P_j < P_i \wedge j \neq i, P_h \geq P_i, k \in res(j), k \in res(h) \\
         0 \;  \text{ otherwise }
     \end{dcases}
 \]
@@ -486,6 +487,10 @@ Adding the maximum amount of time a task may block on shared resources leaves th
 \begin{equation}
     R_i = C_i + B_i + I_i.
 \end{equation}
+
+Using Equation \ref{eq:blocked_time} we can calculate the maximum block time for each task.
+Table \ref{tab:task_resources} shows for each task which resource may cause a block (using the piecewise $usage(k,i)$ fuction)
+and calculates the total block time by adding the maximum hold time of each resource which the task may block on.
 
 \begin{table}[H]
     \centering
