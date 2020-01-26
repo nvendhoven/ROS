@@ -484,9 +484,35 @@ Let $res(a)$ be a collection of used shared resources of Task $T_a$. Let $P_i$ b
 Adding the maximum amount of time a task may block on shared resources leaves the following equation 
 
 \begin{equation}
-    R_i = C_i + I_i + B_i.
+    R_i = C_i + B_i + I_i.
 \end{equation}
 
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+        \hline
+        \textcolor{darkpink}{$i$} & \textcolor{darkpink}{\textit{$P_i$}} & \textcolor{darkpink}{$k = 1$} & \textcolor{darkpink}{$k = 2$} & \textcolor{darkpink}{$k = 3$} & \textcolor{darkpink}{$k = 4$} & \textcolor{darkpink}{$B_i$} \\
+        \hline
+
+        1 & $\frac{1}{170}$ & 0 & 0 & 1 & 1 & 50 \\
+        \hline
+
+        2 & $\frac{1}{360}$ & 1 & 1 & 0 & 1 & 68 \\
+        \hline
+
+        3 & $\frac{1}{400}$ & 0 & 1 & 0 & 1 & 60 \\
+        \hline
+
+        4 & $\frac{1}{420}$ & 0 & 0 & 0 & 1 & 40 \\
+        \hline
+
+        5 & $\frac{1}{580}$ & 0 & 0 & 0 & 0 & 0 \\
+        \hline
+    \end{tabular}
+
+    \caption{Each task and resource passed to $usage(i,k)$ piecewise function}
+    \label{tab:task_resources}
+\end{table}
 
 
 \section*{acknowledgements}
