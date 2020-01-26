@@ -466,7 +466,7 @@ If no calculation errors are made the conclusion should be the same as this one.
 
 The previous section stated that the response time is $R_i = C_i + I_i$ where $I$ is the interference caused by higher priority tasks.
 A task can wait on a shared resource. It is intuitive to see that the time a task is in the \texttt{blocked} state waiting on this shared resource which is not free should be added to the response time.
-If $B$ is the maximum amount of time a task could block on shared resources then let
+If $B$ is the maximum amount of time a task could block on shared resources and $K$ is the amount of shared resources then let
 
 \begin{equation}
     B_i = \sum_{k = 1}^{K} usage(k,i) C_k.
