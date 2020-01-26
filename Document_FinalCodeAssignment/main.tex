@@ -323,18 +323,24 @@ void write_to_uart(int cnt, char c, size_t size)
 
 \section*{Results}
 
+Unfortunately we did not manage to get it fully working. Our program seems to unexpectedly crash
+whenever the two threads try to enter the mutex locked area at around the same time. Figure \ref{resNoUART}
+shows the results of the program without writing to UART.
+
 \begin{figure}[H]
 \caption{Result without shared UART resource}
 \label{resNoUART}
 \centering
-\includegraphics[width=0.7\linewidth]{./images/result_no_uart.jpeg}
+\includegraphics[width=0.9\linewidth]{./images/result_no_uart.jpeg}
 \end{figure}
+
+Figure \ref{res} shows the full results of the project with the \texttt{UART\_write} implementation.
 
 \begin{figure}[H]
 \caption{Result with shared UART resource}
 \label{res}
 \centering
-\includegraphics[width=0.7\linewidth]{./images/result.jpeg}
+\includegraphics[width=0.9\linewidth]{./images/result.jpeg}
 \end{figure}
 \newpage
 
