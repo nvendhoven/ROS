@@ -286,7 +286,7 @@ Therefore, we need to check that
 \end{equation}
 
 We will use the equations just derived on the jobset of Table \ref{tab:task_characteristics_new}.
-This is the same jobset we introduced in Table \ref{tab:task_characters}, but is now arranged in order of priority.
+This is the same jobset we introduced in Table \ref{tab:task_characteristics}, but is now arranged in order of priority.
 $T_1$ has now the highest priority because its deadline is the shortest compared to the other tasks followed by $T_2$ and so on.
 
 \begin{table}[H]
@@ -581,7 +581,13 @@ We would like to thank Harry Broeders for his lectures about calculating the res
 
 \end{thebibliography}
 
-% The Press Summary section is NOT optional.  Write a paragraph describing the paper in a manner suitable for the press; see previous journal editions for examples.
+\newpage
 \section{Summary}
+
+The jobset given in Table \ref{tab:task_characteristics_new} is not DM schedulable if the constraints caused by the shared resources are not taken into account.
+The jobset is DM schedulable without taking the shared resources into account if $T_5$ is removed from the jobset.
+The jobset given in Table \ref{tab:task_characteristics_new} is not DM schedulable if the constraints caused by the shared resources are take into account.
+If $T_5$ and $T_4$ are removed from the jobset then the jobset is DM schedulable.
+
 
 \end{document}
