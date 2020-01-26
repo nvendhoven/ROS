@@ -543,6 +543,25 @@ For $T_3$, $i=3, j=1\dots (i-1) = 1,2$, so
 \end{equation}
 Thus $R_3 = 380$
 
+For $T_4$, $i=4, j=1\dots (i-1) = 1,2,3$, so
+\begin{multline}
+    R_4 = 40 + 40 + (\ceil*{\frac{380}{800}} * 30 + \ceil*{\frac{380}{400}} * 90 + \ceil*{\frac{380}{200}} * 100) = 40 + 40 + (1 * 30) + (1 * 90) + (2 * 100) \\ = 40 + 40 + 30 + 90 + 200 = 400
+\end{multline}
+\begin{multline}
+    R_4 = 40 + 40 + (\ceil*{\frac{400}{800}} * 30 + \ceil*{\frac{400}{400}} * 90 + \ceil*{\frac{400}{200}} * 100) = 40 + 40 + (1 * 30) + (2 * 90) + (2 * 100) \\ = 40 + 40 + 30 + 180 + 200 = 490 
+\end{multline}
+Thus $R_4 = 490$
+
+For $T_5$, $i=5, j=1\dots (i-1) = 1,2,3,4$, so
+\begin{multline}
+R_5 = 50 + 0 + (\ceil*{\frac{490}{700}} * 40 + \ceil*{\frac{490}{800}} * 30 + \ceil*{\frac{490}{400}} * 90 + \ceil*{\frac{490}{200}} * 100) = 50 + 0 + (1 * 40) + (1 * 30) + (2 * 90) + (3 * 100) \\ = 50 + 40 + 30 + 180 + 300 = 600
+\end{multline}
+Thus $R_5 = 600$
+
+
+
+
+
 \section*{acknowledgements}
 %Note correct LaTeX quotations above. Do not use the " symbol, but rather double ` followed by double '
 
