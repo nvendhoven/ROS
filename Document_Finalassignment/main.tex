@@ -464,15 +464,15 @@ If no calculation errors are made the conclusion should be the same as this one.
 
 \section{Schedulability test where $d_i \neq p_i$ and which does take shared resources into account}
 
-The previous section stated that the response time is $R_i = C_i + I_i$ where I is the interference caused by higher priority tasks.
+The previous section stated that the response time is $R_i = C_i + I_i$ where $I$ is the interference caused by higher priority tasks.
 A task can wait on a shared resource. It is intuitive to see that the time a task is in the \texttt{blocked} state waiting on this shared resource which is not free should be added to the response time.
-If $B$ is the maximum amount of time a task should block on shared resources then let
+If $B$ is the maximum amount of time a task could block on shared resources then let
 
 \begin{equation}
     B_i = \sum_{k = 1}^{K} usage(k,i) C_k.
 \end{equation}
 
-Let $res(a)$ be a collection of used shared resources of Task $T_a$, the $usage(k,i)$ is a piecewise function defined as 
+Let $res(a)$ be a collection of used shared resources of Task $T_a$. Let $P_i$ be the priority of $T_i$ (where $P_i = \frac{1}{d_i}$). $usage(k,i)$ is a piecewise function defined as 
 \[
     usage(k,i) = 
     \begin{dcases}
